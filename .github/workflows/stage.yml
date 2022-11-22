@@ -49,10 +49,10 @@ jobs:
             manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
     steps:
 
-    - id: set-matrix
-      run: |
-        TASKS=$(echo $(cat matrix.manifest) | sed 's/ //g' )
-        echo "::set-output name=matrix::$TASKS"
+      - id: set-matrix
+        run: |
+          TASKS=$(echo $(cat matrix.manifest) | sed 's/ //g' )
+          echo "::set-output name=matrix::$TASKS"
         
       - uses: actions/checkout@v2   
       - run: |
@@ -62,3 +62,6 @@ jobs:
       #   run: echo "${{ steps.read_file.outputs.contents }}"
           
         # TODO: Trigger the workflow based on the variable repo
+
+        # - id: set-matrix
+        # run: echo "::set-output name=matrix::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
