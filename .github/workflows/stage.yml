@@ -23,7 +23,7 @@ jobs:
         matrix:
             manifest: ${{ fromJson(needs.list-products.outputs.matrix) }}
     outputs:
-      matrix-json: ${{ steps.read_file.outputs.contents }}
+      matrix-json: ${{ steps.test.outputs.contents }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -35,6 +35,7 @@ jobs:
           path: ${{ matrix.manifest }}
       
       - name: Save file contents
+        id: test
         run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
 
       - name: File contents
