@@ -49,8 +49,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2   
       - run: |
-          echo "${{ matrix.manifest }}"
-          
+          echo "${{ fromJson(matrix.manifest) }}"
+
       # - name: File contents
       #   run: echo "${{ steps.read_file.outputs.contents }}"
           
