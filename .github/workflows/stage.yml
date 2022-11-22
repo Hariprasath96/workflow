@@ -35,17 +35,17 @@ jobs:
       
       - name: Save file contents
         id: saved_file
-        run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
+        run: echo "::set-output name=test_contents::${{steps.read_file.outputs.contents}}"
 
       - name: File contents
-        run: echo "${{ steps.saved_file.outputs.contents }}"
+        run: echo "${{ steps.saved_file.outputs.test_contents }}"
 
   check:
     needs: read-file
     runs-on: ubuntu-latest
     strategy:
         matrix:
-            manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
+            manifest: ${{ needs.read-file.outputs.matrix-json }}
     steps:
       - uses: actions/checkout@v2 
       - run: |
