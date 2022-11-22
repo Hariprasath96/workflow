@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2   
       - run: |
-          echo "${{ fromJson(matrix.manifest) }}"
+          echo "${{ matrix.manifest }}"
 
       # - name: File contents
       #   run: echo "${{ steps.read_file.outputs.contents }}"
