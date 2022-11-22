@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
         matrix:
-            manifest: ${{ fromJson(needs.list-products.outputs.matrix) }}
+            include: ${{ fromJson(needs.list-products.outputs.matrix) }}
     outputs:
       matrix-json: ${{ steps.read_file.outputs.contents }}
     steps:
