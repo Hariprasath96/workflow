@@ -22,7 +22,7 @@ jobs:
         matrix:
             manifest: ${{ fromJson(needs.list-products.outputs.matrix) }}
     outputs:
-      matrix-json: ${{ steps.read_file.outputs.contents }}
+      matrix-json: ${{ steps.saved_file.outputs.contents }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -34,18 +34,18 @@ jobs:
           path: ${{ matrix.manifest }}
       
       - name: Save file contents
-        id: test
+        id: saved_file
         run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
 
       - name: File contents
-        run: echo "${{ steps.read_file.outputs.contents }}"
+        run: echo "${{ steps.saved_file.outputs.contents }}"
 
   check:
     needs: read-file
     runs-on: ubuntu-latest
     strategy:
         matrix:
-            manifest: [${{ fromJson(needs.read-file.outputs.matrix-json) }}]
+            manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
     steps:
       - uses: actions/checkout@v2 
       - run: |
