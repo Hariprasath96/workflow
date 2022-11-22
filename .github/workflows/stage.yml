@@ -41,7 +41,7 @@ jobs:
         run: echo "::save-state name={contents}::${{steps.read_file.outputs.contents}}"
 
       - name: File contents
-        run: echo "${{ steps.saved_file.outputs.contents }}"
+        run: echo "${{ steps.saved_file }}"
 
   check:
     needs: read-file
