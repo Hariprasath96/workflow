@@ -42,7 +42,7 @@ jobs:
         run: echo "${{ steps.read_file.outputs.contents }}"
 
   check:
-    needs: read-file
+    needs: [read-file]
     runs-on: ubuntu-latest
     strategy:
         matrix:
@@ -61,15 +61,15 @@ jobs:
           
         # TODO: Trigger the workflow based on the variable repo
 
-  sample:
-    needs: check
-    runs-on: ubuntu-latest
-    strategy:
-        matrix:
-            manifest: ${{ fromJson(needs.check.outputs.testop) }}
+  # sample:
+  #   needs: check
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #       matrix:
+  #           manifest: ${{ fromJson(needs.check.outputs.testop) }}
             
-    steps:
-      - uses: actions/checkout@v2   
-      - run: |
-          echo "${{ matrix.manifest }}"
+  #   steps:
+  #     - uses: actions/checkout@v2   
+  #     - run: |
+  #         echo "${{ matrix.manifest }}"
           
