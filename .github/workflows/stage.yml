@@ -15,7 +15,6 @@ jobs:
       - id: set-matrix
         run: echo "::set-output name=matrix::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
 
-
   read-file:
     needs: list-products
     runs-on: ubuntu-latest
@@ -42,13 +41,11 @@ jobs:
         run: echo "${{ steps.read_file.outputs.contents }}"
 
   check:
-    needs: [ read-file ]
+    needs: read-file
     runs-on: ubuntu-latest
     strategy:
         matrix:
-            manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
-    outputs:
-      testop: ${{ steps.set-matrix.outputs.matrix }}
+            manifest: [${{ fromJson(needs.read-file.outputs.matrix-json) }}]
     steps:
       - uses: actions/checkout@v2 
       - run: |
