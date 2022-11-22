@@ -35,7 +35,7 @@ jobs:
           path: ${{ matrix.manifest }}
       
       - name: Save file contents
-        run: echo "::set-output name=matrix::${{steps.read_file.outputs.contents}}"
+        run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
 
       - name: File contents
         run: echo "${{ steps.read_file.outputs.contents }}"
