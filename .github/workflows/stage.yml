@@ -42,7 +42,7 @@ jobs:
         run: echo "${{ steps.read_file.outputs.contents }}"
 
   check:
-    needs: [read-file]
+    needs: [ read-file ]
     runs-on: ubuntu-latest
     strategy:
         matrix:
@@ -51,11 +51,6 @@ jobs:
       testop: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v2 
-      - id: set-matrix
-        run: |
-          TASKS=$(echo $(cat matrix.manifest) | sed 's/ //g' )
-          echo "::set-output name=matrix::$TASKS"
-        
       - run: |
           echo "${{ matrix.manifest }}"
           
