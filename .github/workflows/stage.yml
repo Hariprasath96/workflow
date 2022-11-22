@@ -48,6 +48,12 @@ jobs:
         matrix:
             manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
     steps:
+
+    - id: set-matrix
+      run: |
+        TASKS=$(echo $(cat matrix.manifest) | sed 's/ //g' )
+        echo "::set-output name=matrix::$TASKS"
+        
       - uses: actions/checkout@v2   
       - run: |
           echo "${{ matrix.manifest }}"
