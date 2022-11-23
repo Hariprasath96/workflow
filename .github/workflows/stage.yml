@@ -37,9 +37,10 @@ jobs:
           path: ${{ matrix.manifest }}
       
       - name: Save file contents
-        run: |
-          echo ${{steps.read_file.outputs.contents}}
-          echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
+        run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
+
+      - name: checking output of the job
+        run: echo ${{steps.read_file.outputs.contents}}
 
       - uses: actions/checkout@v2
       - run: mkdir -p ./artifact
@@ -79,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
         matrix:
-            manifest: ${{ fromJson(needs.file.outputs.matrix-json) }}
+            manifest: ${{ fromJson(needs.read_file.outputs.matrix-json) }}
     steps:
       - uses: actions/checkout@v2 
       - run: |
