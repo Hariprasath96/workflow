@@ -22,7 +22,7 @@ jobs:
         matrix:
             manifest: ${{ fromJson(needs.list-products.outputs.matrix) }}
     outputs:
-      matrix-json: ${{ steps.saved_file.outputs.contents }}
+      matrix-json: ${{ steps.read_file.outputs.contents }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
