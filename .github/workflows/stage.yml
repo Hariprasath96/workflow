@@ -40,7 +40,7 @@ jobs:
         run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
 
       - name: checking output of the job
-        run: echo ${{steps.read_file.outputs.contents}}
+        run: echo ${{ fromJson(steps.read_file.outputs.contents) }}
 
       - uses: actions/checkout@v2
       - run: mkdir -p ./artifact
