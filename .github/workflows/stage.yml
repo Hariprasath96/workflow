@@ -89,7 +89,7 @@ jobs:
       - name: Print the final result
         shell: bash
         run: |
-          value=`cat my-artifact`
+          value=`cat ./artifact/test.json`
           echo The result is $value
   
   # check_test:
