@@ -48,10 +48,15 @@ jobs:
           path: ./artifact/test.json
 
       - name: Read json file contents
-        id: read_file
+        id: read_json_file
         uses: andstor/file-reader-action@v1
         with:
           path: ./artifact
+
+      - name: check file contents
+        run: |
+          jsonFileContents = ${{steps.read_file.outputs.contents}}
+          echo $jsonFileContents
 
   check:
     needs: [ read-file ]
