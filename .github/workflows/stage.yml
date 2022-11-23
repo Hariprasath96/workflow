@@ -41,9 +41,10 @@ jobs:
       #   run: echo "::save-state name={contents}::${{steps.read_file.outputs.contents}}"
 
       - name: Save to artifacts
+        uses: actions/upload-artifact@v2
         run: |
-          mkdir -p path/to/artifact
-          echo hello > path/to/artifact/world.txt
+          mkdir -p ./artifact
+          echo hello > ./artifact/world.txt
 
       - name: File contents
         run: echo "${{ steps.saved_file }}"
@@ -60,23 +61,8 @@ jobs:
           echo "${{ matrix.manifest }}"
 
       - name: Read artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/download-artifact@v2
         with: 
           name: my-artifact
-          path: path/to/artifact
-
-          
-        # TODO: Trigger the workflow based on the variable repo
-
-  # sample:
-  #   needs: check
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #       matrix:
-  #           manifest: ${{ fromJson(needs.check.outputs.testop) }}
-            
-  #   steps:
-  #     - uses: actions/checkout@v2   
-  #     - run: |
-  #         echo "${{ matrix.manifest }}"
+          path: ./artifact
           
