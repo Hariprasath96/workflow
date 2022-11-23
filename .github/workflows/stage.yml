@@ -67,9 +67,7 @@ jobs:
           path: ./artifact/test.json
 
       - name: check file contents
-        run: |
-          jsonFileContents = ${{steps.read_file.outputs.contents}}
-          echo $jsonFileContents
+        run: echo ${{steps.read_json_file.outputs.contents}}
 
   check:
     needs: [ read-file ]
