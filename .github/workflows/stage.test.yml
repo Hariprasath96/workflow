@@ -1,0 +1,112 @@
+# name: Stage PR workflow
+
+# on:
+#   pull_request:
+#     branches:
+#       - main
+
+# jobs:
+#   list-products:
+#     runs-on: ubuntu-latest
+#     outputs:
+#       matrix: ${{ steps.set-matrix.outputs.matrix }}
+#     steps:
+#       - uses: actions/checkout@v2
+#       - id: set-matrix
+#         run: echo "::set-output name=matrix::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
+
+#   read-file:
+#     needs: list-products
+#     runs-on: ubuntu-latest
+#     strategy:
+#         matrix:
+#             manifest: ${{ fromJson(needs.list-products.outputs.matrix) }}
+#     outputs:
+#       matrix-json: ${{ steps.read_file.outputs.contents }}
+#       file: ${{ steps.read_json_file.outputs.contents }}
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       - name: Read file contents
+#         id: read_file
+#         uses: andstor/file-reader-action@v1
+#         with:
+#           path: ${{ matrix.manifest }}
+      
+#       - name: Save file contents
+#         run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
+
+#       - uses: actions/checkout@v2
+#       - run: mkdir -p ./artifact
+
+#       # - run: echo hello > ./artifact/world.txt
+#       - run: echo ${{ toJson(steps.read_file.outputs.contents) }} > ./artifact/test.json
+
+#       - name: upload to artifacts
+#         uses: actions/upload-artifact@v2
+#         with:
+#           name: my-artifact
+#           path: ./artifact/test.json
+
+
+#       # - name: create artifacts
+#       #   run: |
+#       #     mkdir -p ./artifact
+#       #     echo ${{steps.read_file.outputs.contents}} > ./artifact/test.json 
+
+#       # - name: upload to artifacts
+#       #   uses: actions/upload-artifact@v2
+#       #   with:
+#       #     name: my-artifact
+#       #     path: ./artifact/test.json
+
+#       - name: Read json file contents
+#         id: read_json_file
+#         uses: andstor/file-reader-action@v1
+#         with:
+#           path: ./artifact/test.json
+
+#       - name: check file contents
+#         run: echo ${{steps.read_json_file.outputs.contents}}
+
+#   check:
+#     needs: [ read-file ]
+#     runs-on: ubuntu-latest
+#     strategy:
+#         matrix:
+#             manifest: ${{ fromJson(needs.file.outputs.matrix-json) }}
+#     steps:
+#       - uses: actions/checkout@v2 
+#       - run: |
+#           echo "${{ matrix.manifest }}"
+
+#       - name: Read artifacts
+#         uses: actions/download-artifact@v2
+#         with: 
+#           name: my-artifact
+#           path: ./artifact
+
+#       - name: Print the final result
+#         shell: bash
+#         run: |
+#           value=`cat ./artifact/test.json`
+#           echo The result is $value
+  
+#   # check_test:
+#   #   needs: [ read-file ]
+#   #   runs-on: ubuntu-latest
+#   #   strategy:
+#   #       matrix:
+#   #           value: [{},{},{}]
+#   #   steps:
+#   #     - uses: actions/checkout@v2 
+#   #     - run: |
+#   #         echo "${{ matrix.manifest }}"
+
+#   #     - name: Read artifacts
+#   #       uses: actions/download-artifact@v2
+#   #       with: 
+#   #         name: my-artifact
+#   #         path: ./artifact
+#   #       run: echo ""
