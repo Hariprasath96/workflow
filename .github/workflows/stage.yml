@@ -85,6 +85,12 @@ jobs:
         with: 
           name: my-artifact
           path: ./artifact
+
+      - name: Print the final result
+        shell: bash
+        run: |
+          value=`cat my-artifact`
+          echo The result is $value
   
   # check_test:
   #   needs: [ read-file ]
