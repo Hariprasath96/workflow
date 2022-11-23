@@ -40,7 +40,7 @@ jobs:
       - run: mkdir -p ./artifact
 
       # - run: echo hello > ./artifact/world.txt
-      - run: echo ${{steps.read_file.outputs.contents}} > ./artifact/test.json
+      - run: echo ${{ toJson(steps.read_file.outputs.contents) }} > ./artifact/test.json
 
       - name: upload to artifacts
         uses: actions/upload-artifact@v2
