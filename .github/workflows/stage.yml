@@ -23,6 +23,7 @@ jobs:
             manifest: ${{ fromJson(needs.list-products.outputs.matrix) }}
     outputs:
       matrix-json: ${{ steps.read_file.outputs.contents }}
+      file: ${{ steps.read_json_file.outputs.contents }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -74,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
         matrix:
-            include: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
+            manifest: ${{ fromJson(needs.file.outputs.matrix-json) }}
     steps:
       - uses: actions/checkout@v2 
       - run: |
