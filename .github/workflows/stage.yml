@@ -25,7 +25,6 @@ jobs:
             manifest: ${{ fromJson(needs.list-products.outputs.matrix) }}
     outputs:
       matrix-json: ${{ steps.read_file.outputs.contents }}
-      file: ${{ steps.read_json_file.outputs.contents }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -40,7 +39,7 @@ jobs:
         run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
 
       - name: checking output of the job
-        run: echo ${{ fromJson(steps.read_file.outputs.contents) }}
+        run: echo ${{ toJson(steps.read_file.outputs.contents) }}
 
       - uses: actions/checkout@v2
       - run: mkdir -p ./artifact
