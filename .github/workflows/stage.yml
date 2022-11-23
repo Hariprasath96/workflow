@@ -36,29 +36,23 @@ jobs:
       - name: Save file contents
         run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
 
-      # - name: Save state
-      #   id: saved_file
-      #   run: echo "::save-state name={contents}::${{steps.read_file.outputs.contents}}"
-
-      # - name: Save to artifacts
-      #   uses: actions/upload-artifact@v2
-      #   run: |
-      #     mkdir -p ./artifact
-      #     echo hello > ./artifact/world.txt
-
-      - uses: actions/checkout@v2
-      - run: mkdir -p ./artifact
-
-      - run: echo hello > ./artifact/world.txt
+      - name: create artifacts
+        uses: actions/checkout@v2
+        run: |
+          mkdir -p ./artifact
+          echo ${{steps.read_file.outputs.contents}} > ./artifact/test.json 
 
       - name: upload to artifacts
         uses: actions/upload-artifact@v2
         with:
           name: my-artifact
-          path: ./artifact/world.txt
+          path: ./artifact/test.json
 
-      - name: File contents
-        run: echo "${{ steps.saved_file }}"
+      - name: Read json file contents
+        id: read_file
+        uses: andstor/file-reader-action@v1
+        with:
+          path: ./artifact
 
   check:
     needs: [ read-file ]
@@ -76,4 +70,21 @@ jobs:
         with: 
           name: my-artifact
           path: ./artifact
-          
+  
+  # check_test:
+  #   needs: [ read-file ]
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #       matrix:
+  #           value: [{},{},{}]
+  #   steps:
+  #     - uses: actions/checkout@v2 
+  #     - run: |
+  #         echo "${{ matrix.manifest }}"
+
+  #     - name: Read artifacts
+  #       uses: actions/download-artifact@v2
+  #       with: 
+  #         name: my-artifact
+  #         path: ./artifact
+  #       run: echo ""
