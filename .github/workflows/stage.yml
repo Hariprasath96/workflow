@@ -40,11 +40,22 @@ jobs:
       #   id: saved_file
       #   run: echo "::save-state name={contents}::${{steps.read_file.outputs.contents}}"
 
-      - name: Save to artifacts
+      # - name: Save to artifacts
+      #   uses: actions/upload-artifact@v2
+      #   run: |
+      #     mkdir -p ./artifact
+      #     echo hello > ./artifact/world.txt
+
+      - uses: actions/checkout@v2
+      - run: mkdir -p ./artifact
+
+      - run: echo hello > ./artifact/world.txt
+
+      - name: upload to artifacts
         uses: actions/upload-artifact@v2
-        run: |
-          mkdir -p ./artifact
-          echo hello > ./artifact/world.txt
+        with:
+          name: my-artifact
+          path: ./artifact/world.txt
 
       - name: File contents
         run: echo "${{ steps.saved_file }}"
