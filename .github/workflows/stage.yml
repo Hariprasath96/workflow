@@ -36,16 +36,29 @@ jobs:
       - name: Save file contents
         run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
 
-      - name: create artifacts
-        run: |
-          mkdir -p ./artifact
-          echo ${{steps.read_file.outputs.contents}} > ./artifact/test.json 
+      - uses: actions/checkout@v2
+      - run: mkdir -p ./artifact
+
+      # - run: echo hello > ./artifact/world.txt
+      - run: echo ${{steps.read_file.outputs.contents}} > ./artifact/test.json
 
       - name: upload to artifacts
         uses: actions/upload-artifact@v2
         with:
           name: my-artifact
           path: ./artifact/test.json
+
+
+      # - name: create artifacts
+      #   run: |
+      #     mkdir -p ./artifact
+      #     echo ${{steps.read_file.outputs.contents}} > ./artifact/test.json 
+
+      # - name: upload to artifacts
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: my-artifact
+      #     path: ./artifact/test.json
 
       - name: Read json file contents
         id: read_json_file
