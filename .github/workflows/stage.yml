@@ -23,7 +23,7 @@ jobs:
 
       - name: loop through the files
         run: |
-          for f in $products; do
+          for f in ${{steps.set-matrix.outputs.matrix}}; do
               echo "Value: ${f}"
 
   # read-file:
