@@ -21,15 +21,25 @@ jobs:
 
       - name: loop through the files
         id: looping
-        env: 
-          test: ['a', 'b', 'c']
+        # run: |
+        #   arr=()
+        #   for f in ${{steps.set-matrix.outputs.matrix}}; 
+        #   do
+        #     arr+=("path1")
+        #   done
+        #   echo ::set-output name=arr::${arr[@]}
         run: |
           arr=()
-          for f in ${env.test}; 
+          for i in "$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }})"
           do
-            arr+=("path1")
+            if [[ $i == *"path1"* ]]; then
+              arr+=("path1")
+            fi
+            if [[ $i == *"path2"* ]]; then
+              arr+=("path2")
+            fi
           done
-          echo ::set-output name=arr::${arr}
+          echo ::set-output name=arr::${arr[@]}
       
       - name: checking output of the job
         run: echo ${{ steps.looping.outputs.arr }}
