@@ -44,7 +44,6 @@ jobs:
       - uses: actions/checkout@v2
       - run: mkdir -p ./artifact
 
-      # - run: echo hello > ./artifact/world.txt
       - run: echo ${{ toJson(steps.read_file.outputs.contents) }} > ./artifact/test.json
 
       - name: upload to artifacts
@@ -53,6 +52,19 @@ jobs:
           name: my-artifact
           path: ./artifact/test.json
 
+      - name: create new test file
+        uses: "DamianReeves/write-file-action@master"
+        with:
+          path: ./artifact/file.js
+          write-mode: append
+          contents: |
+            console.log('some contents')
+
+      - name: upload test file to artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: my-artifact1
+          path: ./artifact/file.js
 
       # - name: create artifacts
       #   run: |
@@ -73,6 +85,12 @@ jobs:
 
       - name: check file contents
         run: echo ${{steps.read_json_file.outputs.contents}}
+
+      - name: Print the test file contents
+        shell: bash
+        run: |
+          value=`cat ./artifact/file.js`
+          echo The result is $value
 
   check:
     needs: [ read-file ]
@@ -99,13 +117,25 @@ jobs:
         run: |
           value=`cat ./artifact/test.json`
           echo The result is $value
+
+      - name: Read test file
+        uses: actions/download-artifact@v2
+        with: 
+          name: my-artifact1
+          path: ./artifact/file.js
+
+      - name: Print the final result
+        shell: bash
+        run: |
+          value=`cat ./artifact/file.js`
+          echo The result is $value
   
   # check_test:
   #   needs: [ read-file ]
   #   runs-on: ubuntu-latest
   #   strategy:
   #       matrix:
-  #           value: [{},{},{}]
+  #           value: [hsjad,dds]
   #   steps:
   #     - uses: actions/checkout@v2 
   #     - run: |
