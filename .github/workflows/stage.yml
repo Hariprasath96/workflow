@@ -13,6 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: set-matrix
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: |
           echo $(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')
           echo "::set-env name=products::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
