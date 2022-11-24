@@ -39,12 +39,12 @@ jobs:
         run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
 
       - name: checking output of the job
-        run: echo ${{ toJson(steps.read_file.outputs.contents) }}
+        run: echo ${{ fromJSON(steps.read_file.outputs.contents) }}
 
       - uses: actions/checkout@v2
       - run: mkdir -p ./artifact
 
-      - run: echo ${{ fromJson(steps.read_file.outputs.contents) }} > ./artifact/test.json
+      - run: echo ${{ toJSON(steps.read_file.outputs.contents) }} > ./artifact/test.json
 
       - name: upload to artifacts
         uses: actions/upload-artifact@v2
@@ -99,7 +99,7 @@ jobs:
         shell: bash
         run: |
           value=`cat ./artifact/file.json`
-          echo The result is $value
+          echo The result is fromJson($value)
 
   check:
     needs: [ read-file ]
