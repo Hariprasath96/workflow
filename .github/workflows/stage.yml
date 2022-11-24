@@ -27,7 +27,6 @@ jobs:
           do
           echo 'hello'
             arr+=("path1")
-          done
           echo ::set-output name=arr::${arr[@]}
       
       - name: checking output of the job
