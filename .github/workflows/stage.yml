@@ -25,7 +25,6 @@ jobs:
         run: |
           for f in $products; do
               echo "Value: ${f}"
-              echo "Value: ${f%.*}"
 
   # read-file:
   #   needs: list-products
