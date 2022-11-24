@@ -13,8 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: set-matrix
-        run: echo "::set-output name=matrix::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
-
+        run: |
+          echo $(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')
+          echo "::set-output name=matrix::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
 
   read-file:
     needs: list-products
@@ -35,20 +36,111 @@ jobs:
           path: ${{ matrix.manifest }}
       
       - name: Save file contents
-        run: echo "::set-output name=matrix::${{steps.read_file.outputs.contents}}"
+        run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
 
-      - name: File contents
-        run: echo "${{ steps.read_file.outputs.contents }}"
+      - name: checking output of the job
+        run: echo ${{ toJson(steps.read_file.outputs.contents) }}
+
+      - uses: actions/checkout@v2
+      - run: mkdir -p ./artifact
+
+      - run: echo ${{ toJson(steps.read_file.outputs.contents) }} > ./artifact/test.json
+
+      - name: upload to artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: my-artifact
+          path: ./artifact/test.json
+
+      - name: create new test file
+        uses: "DamianReeves/write-file-action@master"
+        with:
+          path: path/to/file.js
+          write-mode: append
+          contents: |
+            console.log('some contents')
+
+      - name: Commit & Push
+        uses: Andro999b/push@v1.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          force: true
+          message: 'Overwritten by Github Actions - ${date}'
+
+      - name: upload test file to artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: my-artifact1
+          path: path/to/file.js
+
+      - name: Read json file contents
+        id: read_json_file
+        uses: andstor/file-reader-action@v1
+        with:
+          path: ./artifact/test.json
+
+      - name: check file contents
+        run: echo ${{steps.read_json_file.outputs.contents}}
+
+      - name: Print the test file contents
+        shell: bash
+        run: |
+          value=`cat path/to/file.js`
+          echo The result is $value
 
   check:
-    needs: read-file
+    needs: [ read-file ]
     runs-on: ubuntu-latest
     strategy:
+        fail-fast: false
         matrix:
             manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
+            # include: 
+            #   - manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
     steps:
-      - uses: actions/checkout@v2   
+      - uses: actions/checkout@v2 
       - run: |
           echo "${{ matrix.manifest }}"
-          
-        # TODO: Trigger the workflow based on the variable repo
+
+      - name: Read artifacts
+        uses: actions/download-artifact@v2
+        with: 
+          name: my-artifact
+          path: ./artifact
+
+      - name: Print the final result
+        shell: bash
+        run: |
+          value=`cat ./artifact/test.json`
+          echo The result is $value
+
+      - name: Read test file
+        uses: actions/download-artifact@v2
+        with: 
+          name: my-artifact1
+          path: path/to/file.js
+
+      - name: Print the final result
+        shell: bash
+        run: |
+          value=`cat path/to/file.js`
+          echo The result is $value
+  
+  # check_test:
+  #   needs: [ read-file ]
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #       matrix:
+  #           value: [hsjad,dds]
+  #   steps:
+  #     - uses: actions/checkout@v2 
+  #     - run: |
+  #         echo "${{ matrix.manifest }}"
+
+  #     - name: Read artifacts
+  #       uses: actions/download-artifact@v2
+  #       with: 
+  #         name: my-artifact
+  #         path: ./artifact
+  #       run: echo ""

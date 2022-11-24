@@ -8,5 +8,10 @@
     "name": "repo 2",
     "repoName": "repo-1",
     "version": "v1.0.0"
+  },
+  {
+    "name": "repo 3",
+    "repoName": "repo-3",
+    "version": "v1.0.0"
   }
 ]
