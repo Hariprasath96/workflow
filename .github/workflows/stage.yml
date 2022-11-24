@@ -55,7 +55,7 @@ jobs:
       - name: create new test file
         uses: "DamianReeves/write-file-action@master"
         with:
-          path: ./artifact/file.js
+          path: path/to/file.js
           write-mode: append
           contents: |
             console.log('some contents')
@@ -64,18 +64,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: my-artifact1
-          path: ./artifact/file.js
-
-      # - name: create artifacts
-      #   run: |
-      #     mkdir -p ./artifact
-      #     echo ${{steps.read_file.outputs.contents}} > ./artifact/test.json 
-
-      # - name: upload to artifacts
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: my-artifact
-      #     path: ./artifact/test.json
+          path: path/to/file.js
 
       - name: Read json file contents
         id: read_json_file
@@ -89,7 +78,7 @@ jobs:
       - name: Print the test file contents
         shell: bash
         run: |
-          value=`cat ./artifact/file.js`
+          value=`cat path/to/file.js`
           echo The result is $value
 
   check:
@@ -99,8 +88,8 @@ jobs:
         fail-fast: false
         matrix:
             manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
-            include: 
-              - manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
+            # include: 
+            #   - manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
     steps:
       - uses: actions/checkout@v2 
       - run: |
@@ -122,12 +111,12 @@ jobs:
         uses: actions/download-artifact@v2
         with: 
           name: my-artifact1
-          path: ./artifact/file.js
+          path: path/to/file.js
 
       - name: Print the final result
         shell: bash
         run: |
-          value=`cat ./artifact/file.js`
+          value=`cat path/to/file.js`
           echo The result is $value
   
   # check_test:
