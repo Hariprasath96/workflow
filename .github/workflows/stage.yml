@@ -76,7 +76,7 @@ jobs:
         uses: Andro999b/push@v1.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: $BRANCH_NAME
+          branch: refs/heads/$BRANCH_NAME
           force: true
           message: 'Overwritten by Github Actions - ${date}'
 
