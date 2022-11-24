@@ -30,12 +30,11 @@ jobs:
         #   echo ::set-output name=arr::${arr[@]}
         run: |
           arr=()
-          for i in "$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }})"
+          for i in ["A","B"]
           do
-            if [[ $i == *"path1"* ]]; then
+            if [[ $i == 0 ]]; then
               arr+=("path1")
             fi
-            if [[ $i == *"path2"* ]]; then
               arr+=("path2")
             fi
           done
