@@ -37,7 +37,7 @@ jobs:
             fi
               arr+=("path2")
           done
-          echo ::set-output name=arr::${arr[@]}
+          echo ::set-output name=arr::${arr}
       
       - name: checking output of the job
         run: echo ${{ steps.looping.outputs.arr }}
