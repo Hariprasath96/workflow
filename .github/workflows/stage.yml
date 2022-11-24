@@ -60,6 +60,13 @@ jobs:
           contents: |
             console.log('some contents')
 
+      - name: Commit & Push
+        uses: Andro999b/push@v1.3
+        with:
+          branch: main
+          force: true
+          message: 'Overwritten by Github Actions - ${date}'
+
       - name: upload test file to artifacts
         uses: actions/upload-artifact@v2
         with:
