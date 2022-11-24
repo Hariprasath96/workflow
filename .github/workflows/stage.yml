@@ -21,7 +21,7 @@ jobs:
       - name: loop through the files
         run: |
           for f in ${{ steps.set-matrix.outputs.matrix }}
-          echo $f
+          echo f
 
   # read-file:
   #   needs: list-products
