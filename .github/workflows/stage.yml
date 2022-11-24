@@ -36,7 +36,6 @@ jobs:
               arr+=("path1")
             fi
               arr+=("path2")
-            fi
           done
           echo ::set-output name=arr::${arr[@]}
       
