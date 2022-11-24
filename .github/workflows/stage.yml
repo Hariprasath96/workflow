@@ -21,9 +21,11 @@ jobs:
 
       - name: loop through the files
         id: looping
+        env: 
+          test: ['a', 'b', 'c']
         run: |
           arr=()
-          for f in ${{steps.set-matrix.outputs.matrix}}; 
+          for f in ${env.test}; 
           do
             arr+=("path1")
           done
