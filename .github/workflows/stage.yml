@@ -13,18 +13,24 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: set-matrix
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         run: |
           echo $(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')
-          echo "::set-env name=products::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
           echo "::set-output name=matrix::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
 
 
       - name: loop through the files
+        id: looping
         run: |
-          for f in ${{steps.set-matrix.outputs.matrix}}; do
-              echo "Value: ${f}"
+          arr=()
+          for f in ${{steps.set-matrix.outputs.matrix}}; 
+          do
+            arr+=("path1")
+          done
+          echo ::set-output name=arr::${arr[@]}
+      
+      - name: checking output of the job
+        run: echo ${{ toJSON(steps.looping.outputs.contents) }}
+
 
   # read-file:
   #   needs: list-products
