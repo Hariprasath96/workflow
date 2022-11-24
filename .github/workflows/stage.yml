@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      arr: ${{ steps.looping.outputs.arr }}
     steps:
       - uses: actions/checkout@v2
       - id: set-matrix
@@ -29,7 +30,7 @@ jobs:
           echo ::set-output name=arr::${arr[@]}
       
       - name: checking output of the job
-        run: echo ${{ toJSON(steps.looping.outputs.contents) }}
+        run: echo ${{ steps.looping.outputs.arr }}
 
 
   # read-file:
