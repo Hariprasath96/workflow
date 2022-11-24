@@ -39,12 +39,12 @@ jobs:
         run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
 
       - name: checking output of the job
-        run: echo ${{ toJson(steps.read_file.outputs.contents) }}
+        run: echo ${{ toJSON(steps.read_file.outputs.contents) }}
 
       - uses: actions/checkout@v2
       - run: mkdir -p ./artifact
 
-      - run: echo ${{ toJson(steps.read_file.outputs.contents) }} > ./artifact/test.json
+      - run: echo ${{ toJSON(steps.read_file.outputs.contents) }} > ./artifact/test.json
 
       - name: upload to artifacts
         uses: actions/upload-artifact@v2
@@ -55,16 +55,28 @@ jobs:
       - name: create new test file
         uses: "DamianReeves/write-file-action@master"
         with:
-          path: path/to/file.js
+          path: ./artifact/file.json
           write-mode: append
           contents: |
-            console.log('some contents')
+            toJSON(steps.read_file.outputs.contents)
+
+      # extract branch name on pull request
+      - name: Print branch name
+        if: github.event_name == 'pull_request'
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_HEAD_REF})"
+
+      # print branch name
+      - name: Get branch name
+        run: echo 'The branch name is' $BRANCH_NAME
+
 
       - name: Commit & Push
         uses: Andro999b/push@v1.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: refs/heads/$BRANCH_NAME
           force: true
           message: 'Overwritten by Github Actions - ${date}'
 
@@ -72,7 +84,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: my-artifact1
-          path: path/to/file.js
+          path: ./artifact/file.json
 
       - name: Read json file contents
         id: read_json_file
@@ -86,7 +98,7 @@ jobs:
       - name: Print the test file contents
         shell: bash
         run: |
-          value=`cat path/to/file.js`
+          value=`cat ./artifact/file.json`
           echo The result is $value
 
   check:
@@ -119,12 +131,12 @@ jobs:
         uses: actions/download-artifact@v2
         with: 
           name: my-artifact1
-          path: path/to/file.js
+          path: ./artifact
 
       - name: Print the final result
         shell: bash
         run: |
-          value=`cat path/to/file.js`
+          value=`cat ./artifact/file.json`
           echo The result is $value
   
   # check_test:
