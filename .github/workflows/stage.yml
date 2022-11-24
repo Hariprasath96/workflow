@@ -23,8 +23,9 @@ jobs:
 
       - name: loop through the files
         run: |
-          for f in $products
-          echo $products[f]
+          for f in $products; do
+              echo "Value: ${f}"
+              echo "Value: ${f%.*}"
 
   # read-file:
   #   needs: list-products
