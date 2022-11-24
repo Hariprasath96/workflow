@@ -55,16 +55,26 @@ jobs:
       - name: create new test file
         uses: "DamianReeves/write-file-action@master"
         with:
-          path: path/to/file.js
+          path: ./artifact/file.js
           write-mode: append
           contents: |
             console.log('some contents')
+
+      # extract branch name on pull request
+      - name: Print branch name
+        if: github.event_name == 'pull_request'
+        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_HEAD_REF})"
+
+      # print branch name
+      - name: Get branch name
+        run: echo 'The branch name is' $BRANCH_NAME
+
 
       - name: Commit & Push
         uses: Andro999b/push@v1.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: $BRANCH_NAME
           force: true
           message: 'Overwritten by Github Actions - ${date}'
 
@@ -72,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: my-artifact1
-          path: path/to/file.js
+          path: ./artifact/file.js
 
       - name: Read json file contents
         id: read_json_file
@@ -86,7 +96,7 @@ jobs:
       - name: Print the test file contents
         shell: bash
         run: |
-          value=`cat path/to/file.js`
+          value=`cat ./artifact/file.js`
           echo The result is $value
 
   check:
@@ -119,12 +129,12 @@ jobs:
         uses: actions/download-artifact@v2
         with: 
           name: my-artifact1
-          path: path/to/file.js
+          path: ./artifact
 
       - name: Print the final result
         shell: bash
         run: |
-          value=`cat path/to/file.js`
+          value=`cat ./artifact/file.js`
           echo The result is $value
   
   # check_test:
