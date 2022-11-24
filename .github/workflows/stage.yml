@@ -15,13 +15,14 @@ jobs:
       - id: set-matrix
         run: |
           echo $(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')
+          echo "::set-env name=products::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
           echo "::set-output name=matrix::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
 
 
       - name: loop through the files
         run: |
-          for f in ${{ steps.set-matrix.outputs.matrix }}
-          echo f
+          for f in $products
+          echo products[f]
 
   # read-file:
   #   needs: list-products
