@@ -39,7 +39,7 @@ jobs:
         run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
 
       - name: checking output of the job
-        run: echo ${{ fromJSON(steps.read_file.outputs.contents) }}
+        run: echo ${{ toJSON(steps.read_file.outputs.contents) }}
 
       - uses: actions/checkout@v2
       - run: mkdir -p ./artifact
@@ -58,7 +58,7 @@ jobs:
           path: ./artifact/file.json
           write-mode: append
           contents: |
-            fromJson(steps.read_file.outputs.contents)
+            toJSON(steps.read_file.outputs.contents)
 
       # extract branch name on pull request
       - name: Print branch name
@@ -99,7 +99,7 @@ jobs:
         shell: bash
         run: |
           value=`cat ./artifact/file.json`
-          echo The result is fromJson($value)
+          echo The result is $value
 
   check:
     needs: [ read-file ]
