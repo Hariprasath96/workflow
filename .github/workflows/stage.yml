@@ -17,134 +17,105 @@ jobs:
           echo $(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')
           echo "::set-output name=matrix::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
 
-  read-file:
-    needs: list-products
-    runs-on: ubuntu-latest
-    strategy:
-        matrix:
-            manifest: ${{ fromJson(needs.list-products.outputs.matrix) }}
-    outputs:
-      matrix-json: ${{ steps.read_file.outputs.contents }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
 
-      - name: Read file contents
-        id: read_file
-        uses: andstor/file-reader-action@v1
-        with:
-          path: ${{ matrix.manifest }}
-      
-      - name: Save file contents
-        run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
-
-      - name: checking output of the job
-        run: echo ${{ toJSON(steps.read_file.outputs.contents) }}
-
-      - uses: actions/checkout@v2
-      - run: mkdir -p ./artifact
-
-      - run: echo ${{ toJSON(steps.read_file.outputs.contents) }} > ./artifact/test.json
-
-      - name: upload to artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: my-artifact
-          path: ./artifact/test.json
-
-      - name: create new test file
-        uses: "DamianReeves/write-file-action@master"
-        with:
-          path: ./artifact/file.json
-          write-mode: append
-          contents: |
-            toJSON(steps.read_file.outputs.contents)
-
-      # extract branch name on pull request
-      - name: Print branch name
-        if: github.event_name == 'pull_request'
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_HEAD_REF})"
-
-      # print branch name
-      - name: Get branch name
-        run: echo 'The branch name is' $BRANCH_NAME
-
-
-      - name: Commit & Push
-        uses: Andro999b/push@v1.3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: refs/heads/$BRANCH_NAME
-          force: true
-          message: 'Overwritten by Github Actions - ${date}'
-
-      - name: upload test file to artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: my-artifact1
-          path: ./artifact/file.json
-
-      - name: Read json file contents
-        id: read_json_file
-        uses: andstor/file-reader-action@v1
-        with:
-          path: ./artifact/test.json
-
-      - name: check file contents
-        run: echo ${{steps.read_json_file.outputs.contents}}
-
-      - name: Print the test file contents
-        shell: bash
+      - name: loop through the files
         run: |
-          value=`cat ./artifact/file.json`
-          echo The result is $value
+          for f in ${{ steps.set-matrix.outputs.matrix }}
+          echo $f
 
-  check:
-    needs: [ read-file ]
-    runs-on: ubuntu-latest
-    strategy:
-        fail-fast: false
-        matrix:
-            manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
-            # include: 
-            #   - manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
-    steps:
-      - uses: actions/checkout@v2 
-      - run: |
-          echo "${{ matrix.manifest }}"
-
-      - name: Read artifacts
-        uses: actions/download-artifact@v2
-        with: 
-          name: my-artifact
-          path: ./artifact
-
-      - name: Print the final result
-        shell: bash
-        run: |
-          value=`cat ./artifact/test.json`
-          echo The result is $value
-
-      - name: Read test file
-        uses: actions/download-artifact@v2
-        with: 
-          name: my-artifact1
-          path: ./artifact
-
-      - name: Print the final result
-        shell: bash
-        run: |
-          value=`cat ./artifact/file.json`
-          echo The result is $value
-  
-  # check_test:
-  #   needs: [ read-file ]
+  # read-file:
+  #   needs: list-products
   #   runs-on: ubuntu-latest
   #   strategy:
   #       matrix:
-  #           value: [hsjad,dds]
+  #           manifest: ${{ fromJson(needs.list-products.outputs.matrix) }}
+  #   outputs:
+  #     matrix-json: ${{ steps.read_file.outputs.contents }}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+
+  #     - name: Read file contents
+  #       id: read_file
+  #       uses: andstor/file-reader-action@v1
+  #       with:
+  #         path: ${{ matrix.manifest }}
+      
+  #     - name: Save file contents
+  #       run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
+
+  #     - name: checking output of the job
+  #       run: echo ${{ toJSON(steps.read_file.outputs.contents) }}
+
+  #     - uses: actions/checkout@v2
+  #     - run: mkdir -p ./artifact
+
+  #     - run: echo ${{ toJSON(steps.read_file.outputs.contents) }} > ./artifact/test.json
+
+  #     - name: upload to artifacts
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: my-artifact
+  #         path: ./artifact/test.json
+
+  #     - name: create new test file
+  #       uses: "DamianReeves/write-file-action@master"
+  #       with:
+  #         path: ./artifact/file.json
+  #         write-mode: append
+  #         contents: |
+  #           toJSON(steps.read_file.outputs.contents)
+
+  #     # extract branch name on pull request
+  #     - name: Print branch name
+  #       if: github.event_name == 'pull_request'
+  #       env:
+  #         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+  #       run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_HEAD_REF})"
+
+  #     # print branch name
+  #     - name: Get branch name
+  #       run: echo 'The branch name is' $BRANCH_NAME
+
+
+  #     - name: Commit & Push
+  #       uses: Andro999b/push@v1.3
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #         branch: refs/heads/$BRANCH_NAME
+  #         force: true
+  #         message: 'Overwritten by Github Actions - ${date}'
+
+  #     - name: upload test file to artifacts
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: my-artifact1
+  #         path: ./artifact/file.json
+
+  #     - name: Read json file contents
+  #       id: read_json_file
+  #       uses: andstor/file-reader-action@v1
+  #       with:
+  #         path: ./artifact/test.json
+
+  #     - name: check file contents
+  #       run: echo ${{steps.read_json_file.outputs.contents}}
+
+  #     - name: Print the test file contents
+  #       shell: bash
+  #       run: |
+  #         value=`cat ./artifact/file.json`
+  #         echo The result is $value
+
+  # check:
+  #   needs: [ read-file ]
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #       fail-fast: false
+  #       matrix:
+  #           manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
+  #           # include: 
+  #           #   - manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
   #   steps:
   #     - uses: actions/checkout@v2 
   #     - run: |
@@ -155,4 +126,22 @@ jobs:
   #       with: 
   #         name: my-artifact
   #         path: ./artifact
-  #       run: echo ""
+
+  #     - name: Print the final result
+  #       shell: bash
+  #       run: |
+  #         value=`cat ./artifact/test.json`
+  #         echo The result is $value
+
+  #     - name: Read test file
+  #       uses: actions/download-artifact@v2
+  #       with: 
+  #         name: my-artifact1
+  #         path: ./artifact
+
+  #     - name: Print the final result
+  #       shell: bash
+  #       run: |
+  #         value=`cat ./artifact/file.json`
+  #         echo The result is $value
+  
