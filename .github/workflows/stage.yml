@@ -19,7 +19,8 @@ jobs:
       - name: data
         id: json-data
         run: |
-          npm install
+          npm install fs-extra
+          npm install path
           values=$(node scripts/test.js)
           echo 'values are ${values}'
           echo "::set-output name=contents::$values"
