@@ -6,19 +6,22 @@ const jsonsInDir = fs
   .filter((file) => extname(file) === ".json");
 let arr = [];
 
+export const getFileData = () => {
+  jsonsInDir.forEach((file) => {
+    const fileData = fs.readFileSync(join("~/products/", file));
 
-// const getFileData = () => {
-jsonsInDir.forEach((file) => {
-  const fileData = fs.readFileSync(join("~/products/", file));
+    const json = JSON.parse(fileData.toString());
+    console.log(
+      "🚀 ~ file: test.js ~ line 18 ~ jsonsInDir.forEach ~ json",
+      json
+    );
+    arr = [...arr, ...json];
+  });
 
-  const json = JSON.parse(fileData.toString());
-  console.log("🚀 ~ file: test.js ~ line 18 ~ jsonsInDir.forEach ~ json", json);
-  arr = [...arr, ...json];
-});
-
-console.log("🚀 ~ file: test.js ~ line 14 ~ jsonsInDir.forEach ~ arr", arr);
-fs.writeFileSync("../products/contents.json", JSON.stringify(arr));
-// };
+  console.log("🚀 ~ file: test.js ~ line 14 ~ jsonsInDir.forEach ~ arr", arr);
+  fs.writeFileSync("../products/contents.json", JSON.stringify(arr));
+  return arr;
+};
 
 // getFileData.then((data)=>{
 //     console.log("🚀 ~ file: test.js ~ line 20 ~ jsonsInDir.forEach ~ arr", data)

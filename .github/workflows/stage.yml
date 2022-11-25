@@ -39,6 +39,8 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
+            npm install fs-extra
+            npm install path
             const script = import('${{ github.workspace }}/scripts/test.js')
             console.log(script())
 
