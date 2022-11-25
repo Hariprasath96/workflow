@@ -14,7 +14,9 @@ let arr = [
 // const getFileData = () => {
 jsonsInDir.forEach((file) => {
   const fileData = readFileSync(join("./", file));
+  console.log("🚀 ~ file: test.js ~ line 17 ~ jsonsInDir.forEach ~ fileData", fileData)
   const json = JSON.parse(fileData.toString());
+  console.log("🚀 ~ file: test.js ~ line 18 ~ jsonsInDir.forEach ~ json", json)
   arr = [...arr, ...json];
 });
 console.log("🚀 ~ file: test.js ~ line 14 ~ jsonsInDir.forEach ~ arr", arr);
