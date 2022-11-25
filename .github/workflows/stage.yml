@@ -209,7 +209,13 @@ jobs:
       # To use this repository's private action,
       # you must check out the repository
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
+
+      - name: Setup Node Version
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14 # Install the node version needed
+
       - name: Hello world action step
         uses: ./ # Uses an action in the root directory
         id: hello
