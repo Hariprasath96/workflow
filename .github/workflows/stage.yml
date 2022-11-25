@@ -19,7 +19,7 @@ jobs:
       - name: data
         id: json-data
         run: |
-          values=$(node products/test.js)
+          values=$(node scripts/test.js)
           echo 'values are ${values}'
           echo "::set-output name=contents::$values"
       
