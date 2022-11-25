@@ -217,7 +217,7 @@ jobs:
           node-version: 14 # Install the node version needed
 
       - name: Hello world action step
-        uses: ./ # Uses an action in the root directory
+        uses: scripts/test1.js # Uses an action in the root directory
         id: hello
         with:
           who-to-greet: 'Mona the Octocat'
