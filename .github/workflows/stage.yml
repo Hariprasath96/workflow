@@ -16,8 +16,7 @@ jobs:
         with:
           node-version: 14 # Install the node version needed
           script: |
-            npm install fs
-            npm install path
+            npm install
       
       - name: data
         id: json-data
