@@ -12,6 +12,7 @@ jsonsInDir.forEach((file) => {
   const json = JSON.parse(fileData.toString());
   arr = [...arr, ...json];
 });
+console.log("🚀 ~ file: test.js ~ line 14 ~ jsonsInDir.forEach ~ arr", arr);
 return arr;
 // };
 
