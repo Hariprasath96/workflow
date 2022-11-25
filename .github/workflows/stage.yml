@@ -18,7 +18,7 @@ jobs:
           echo "::set-output name=contents::$values"
       
       - name: get listed contents
-        run: echo "${{steps.json-data.outputs.contents}}"
+        run: echo ${{steps.json-data.outputs.contents}}
   # list-products:
   #   runs-on: ubuntu-latest
   #   outputs:
