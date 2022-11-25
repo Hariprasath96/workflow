@@ -1,3 +1,4 @@
+/*
 import fs from "fs-extra";
 import { basename, extname, join } from "path";
 
@@ -30,3 +31,9 @@ export const getFileData = () => {
 
 // const data = getFileData();
 // console.log(data)
+
+*/
+
+export default function printStuff() {
+  console.log("stuff");
+}
