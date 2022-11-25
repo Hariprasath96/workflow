@@ -26,7 +26,8 @@ jobs:
         id: json-data
         run: |
           values=$(node ../src/scripts/test.js)
-          echo 'values are ${values}'
+          echo 'helloooo'
+          echo 'values are' ${values}
           echo "::set-output name=contents::$values"
       
       - name: get listed contents
