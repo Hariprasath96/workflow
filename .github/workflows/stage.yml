@@ -15,7 +15,7 @@ jobs:
         run: |
           values=$(node products/test.js)
           echo 'values are ${values}'
-          echo "::set-output name=contents::$values
+          echo "::set-output name=contents::$values"
       
       - name: get listed contents
         run: echo "${{steps.json-data.outputs.contents}}"
