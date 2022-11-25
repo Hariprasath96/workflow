@@ -4,7 +4,13 @@ const path = require("path");
 const jsonsInDir = fs
   .readdirSync("./")
   .filter((file) => path.extname(file) === ".json");
-let arr = [];
+let arr = [
+    { name: 'repo 1', repoName: 'repo-1', version: 'v1.0.0' },
+    { name: 'repo 2', repoName: 'repo-1', version: 'v1.0.0' },
+    { name: 'repo 3', repoName: 'repo-3', version: 'v1.0.0' },
+    { name: 'test 1', repoName: 'test-1', version: 'v1.0.0' },
+    { name: 'test 2', repoName: 'test-2', version: 'v1.0.0' }
+  ];
 
 // const getFileData = () => {
 jsonsInDir.forEach((file) => {
