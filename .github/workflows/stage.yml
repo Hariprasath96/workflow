@@ -8,6 +8,9 @@ on:
 jobs:
   list-all-data:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src
     steps:
       - uses: actions/checkout@v2
 
@@ -41,8 +44,8 @@ jobs:
           script: |
             npm install fs-extra
             npm install path
-            const script = import('${{ github.workspace }}/scripts/test.js')
-            console.log(script())
+            const scriptq = import('${{ github.workspace }}/scripts/test.js')
+            console.log(scriptq())
 
   # list-products:
   #   runs-on: ubuntu-latest
