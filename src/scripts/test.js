@@ -34,7 +34,7 @@ export const getFileData = () => {
 
 */
 
-export default function printStuff() {
+// export default function printStuff() {
   console.log("stuff");
   return 'i am output'
-}
+// }
