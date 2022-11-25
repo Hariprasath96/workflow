@@ -15,29 +15,33 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 14 # Install the node version needed
-      - run: npm install
-      - name: data
-        id: json-data
-        run: |
-          npm install fs-extra
-          npm install path
-          values=$(node scripts/test.js)
-          echo 'values are ${values}'
-          echo "::set-output name=contents::$values"
+      # - run: |
+      #     workdir /app
+      #     copy scripts/package.json ./app
+      #     npm install
+      # - name: data
+      #   id: json-data
+      #   run: |
+      #     npm install fs-extra
+      #     npm install path
+      #     values=$(node scripts/test.js)
+      #     echo 'values are ${values}'
+      #     echo "::set-output name=contents::$values"
       
-      - name: get listed contents
-        run: echo ${{steps.json-data.outputs.contents}}
+      # - name: get listed contents
+      #   run: echo ${{steps.json-data.outputs.contents}}
 
-      - id: set-matrix
-        run: |
-          echo $(ls products/contents.json)
-          echo "::set-output name=matrix::$(ls products/contents.json)"
+      # - id: set-matrix
+      #   run: |
+      #     echo $(ls products/contents.json)
+      #     echo "::set-output name=matrix::$(ls products/contents.json)"
 
-      # - uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       const script = require('./products/test.js')
-      #       console.log(script())
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('./scripts/test.js')
+            console.log(script())
+
   # list-products:
   #   runs-on: ubuntu-latest
   #   outputs:
