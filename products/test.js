@@ -1,9 +1,8 @@
-const fs = require("fs");
-const path = require("path");
+import { readdirSync, readFileSync, writeFileSync } from "fs";
+import { extname, join } from "path";
 
-const jsonsInDir = fs
-  .readdirSync("./")
-  .filter((file) => path.extname(file) === ".json");
+const jsonsInDir = readdirSync("./")
+  .filter((file) => extname(file) === ".json");
 let arr = [
     { name: 'repo 1', repoName: 'repo-1', version: 'v1.0.0' },
     { name: 'repo 2', repoName: 'repo-1', version: 'v1.0.0' },
@@ -14,12 +13,12 @@ let arr = [
 
 // const getFileData = () => {
 jsonsInDir.forEach((file) => {
-  const fileData = fs.readFileSync(path.join("./", file));
+  const fileData = readFileSync(join("./", file));
   const json = JSON.parse(fileData.toString());
   arr = [...arr, ...json];
 });
 console.log("🚀 ~ file: test.js ~ line 14 ~ jsonsInDir.forEach ~ arr", arr);
-fs.writeFileSync("./contents.json", JSON.stringify(arr));
+writeFileSync("./contents.json", JSON.stringify(arr));
 // };
 
 // getFileData.then((data)=>{
