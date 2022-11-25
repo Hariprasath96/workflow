@@ -12,7 +12,7 @@ jobs:
       - name: data
         id: json-data
         run: |
-          values=$(node ./products/test.js)
+          values=$(node products/test.js)
           echo 'values are ${values}'
   # list-products:
   #   runs-on: ubuntu-latest
