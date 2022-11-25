@@ -2,14 +2,14 @@ import fs from "fs-extra";
 import { basename, extname, join } from "path";
 
 const jsonsInDir = fs
-  .readdirSync("../products")
+  .readdirSync("/products")
   .filter((file) => extname(file) === ".json");
 let arr = [];
 
 
 // const getFileData = () => {
 jsonsInDir.forEach((file) => {
-  const fileData = fs.readFileSync(join("../products/", file));
+  const fileData = fs.readFileSync(join("/products/", file));
 
   const json = JSON.parse(fileData.toString());
   console.log("🚀 ~ file: test.js ~ line 18 ~ jsonsInDir.forEach ~ json", json);
