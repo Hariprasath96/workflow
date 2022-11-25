@@ -6,31 +6,40 @@ on:
       - main
 
 jobs:
-  list-products:
+  list-all-data:
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-      arr: ${{ steps.looping.outputs.arr }}
     steps:
-      - uses: actions/checkout@v2
-      - id: set-matrix
+      - name: data
+        id: json-data
         run: |
-          echo $(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')
-          echo "::set-output name=matrix::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
+          values=$(node ./products/test.js)
+          echo 'values are ${values}'
+  # list-products:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     matrix: ${{ steps.set-matrix.outputs.matrix }}
+  #     arr: ${{ steps.looping.outputs.arr }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - id: set-matrix
+  #       run: |
+  #         echo $(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')
+  #         echo "::set-output name=matrix::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
 
 
-      - name: loop through the files
-        id: looping
-        run: |
-          arr=()
-          for f in ${{steps.set-matrix.outputs.matrix}}; 
-          do
-          echo 'hello'
-            arr+=("path1")
-          echo ::set-output name=arr::${arr[@]}
+  #     - name: loop through the files
+  #       id: looping
+  #       run: |
+  #         arr=()
+  #         for f in ${{steps.set-matrix.outputs.matrix}}; 
+  #         do
+  #         echo 'hello'
+  #           arr+=("path1")
+  #         done
+  #         echo ::set-output name=arr::${arr[@]}
       
-      - name: checking output of the job
-        run: echo ${{ steps.looping.outputs.arr }}
+  #     - name: checking output of the job
+  #       run: echo ${{ steps.looping.outputs.arr }}
 
 
   # read-file:
