@@ -25,7 +25,7 @@ jobs:
       - name: data
         id: json-data
         run: |
-          values=$(node scripts/test.js)
+          values=$(node ${{ github.workspace }}/scripts/test.js)
           echo 'values are ${values}'
           echo "::set-output name=contents::$values"
       
