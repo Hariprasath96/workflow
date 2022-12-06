@@ -3,9 +3,11 @@ name: Release on stage environment
 on:
   workflow_call:
     inputs:
-      config-path:
+      version_to_deploy:
+        description: 'What version to deploy'
         required: true
         type: string
+        default: 'latest'
 
 jobs:
   reusable_workflow_job:
@@ -13,5 +15,5 @@ jobs:
     environment: production
     steps:
     - name: print
-      run: echo test ${{ inputs.config-path }}
+      run: echo test ${{ inputs.version_to_deploy }}
       

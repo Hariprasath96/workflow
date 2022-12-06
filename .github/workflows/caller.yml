@@ -5,4 +5,4 @@ jobs:
   call-workflow-passing-data:
     uses: ./.github/workflows/called.yml
     with:
-      config-path: new variable
+      version_to_deploy: 1.0.0
