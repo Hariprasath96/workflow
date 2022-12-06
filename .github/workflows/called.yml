@@ -12,6 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-    - uses: actions/labeler@v4
-      with:
-        configuration-path: ${{ inputs.config-path }}
+    - name: print
+      run: echo test ${{ inputs.config-path }}
+      

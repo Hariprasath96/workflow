@@ -5,4 +5,4 @@ jobs:
   call-workflow-passing-data:
     uses: ./.github/workflows/called.yml
     with:
-      config-path: .github/labeler.yml
+      config-path: test
