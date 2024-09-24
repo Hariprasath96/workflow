@@ -1,0 +1,28 @@
+name: Run Mend Scan for Specified Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      branchName:
+        description: 'Branch name to checkout and run mend scan'
+        required: true
+        type: string
+        default: 'main'
+jobs: 
+    run-mend-scan:
+        runs-on: ubuntu-latest
+        env:
+          branchName: ${{ inputs.branchName }}
+        steps:
+          - name: Echo branch name
+            run: echo "branch name to run mend report - ${{env.branchName }}"
+
+          - name: Checkout repository at specified branch
+            uses: actions/checkout@v3
+            with:
+              ref: ${{ github.event.inputs.branchName }}
+            
+          - name: Echo current timestamp
+            run: echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+        
