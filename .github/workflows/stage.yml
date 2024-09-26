@@ -6,133 +6,173 @@ on:
       - main
 
 jobs:
-  list-products:
+  list-all-data:
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    # defaults:
+    #   run:
+    #     working-directory: src
     steps:
       - uses: actions/checkout@v2
-      - id: set-matrix
-        run: |
-          echo $(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')
-          echo "::set-output name=matrix::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
 
-  read-file:
-    needs: list-products
-    runs-on: ubuntu-latest
-    strategy:
-        matrix:
-            manifest: ${{ fromJson(needs.list-products.outputs.matrix) }}
-    outputs:
-      matrix-json: ${{ steps.read_file.outputs.contents }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Read file contents
-        id: read_file
-        uses: andstor/file-reader-action@v1
+      - name: Setup Node Version
+        uses: actions/setup-node@v2
         with:
-          path: ${{ matrix.manifest }}
+          node-version: 14 # Install the node version needed
+
+      # - uses: actions/github-script@v0.9.0
+      #   with:
+      #     script: |
+      #       const path = require('path')
+      #       return require(path.resolve('test.js'))({context})    
+      # - run: |
+      #     workdir /app
+      #     copy scripts/package.json ./app
+      #     npm install
+      # - name: data
+      #   id: json-data
+      #   run: |
+      #     values=$(node ../src/scripts/test.js)
+      #     echo 'helloooo'
+      #     echo 'values are' ${values}
+      #     echo "::set-output name=contents::$values"
       
-      - name: Save file contents
-        run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
+      # - name: get listed contents
+      #   run: echo ${{steps.json-data.outputs.contents}}
 
-      - name: checking output of the job
-        run: echo ${{ toJson(steps.read_file.outputs.contents) }}
+      # - id: set-matrix
+      #   run: |
+      #     echo $(ls products/contents.json)
+      #     echo "::set-output name=matrix::$(ls products/contents.json)"
 
-      - uses: actions/checkout@v2
-      - run: mkdir -p ./artifact
+      # - uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       npm install fs-extra
+      #       npm install path
+      #       const scriptq = import('${{ github.workspace }}/scripts/test.js')
+      #       console.log(scriptq())
 
-      - run: echo ${{ toJson(steps.read_file.outputs.contents) }} > ./artifact/test.json
+  # list-products:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     matrix: ${{ steps.set-matrix.outputs.matrix }}
+  #     arr: ${{ steps.looping.outputs.arr }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - id: set-matrix
+  #       run: |
+  #         echo $(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')
+  #         echo "::set-output name=matrix::$(ls products/*.json | jq -R -s -c 'split("\n")[:-1]')"
 
-      - name: upload to artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: my-artifact
-          path: ./artifact/test.json
 
-      - name: create new test file
-        uses: "DamianReeves/write-file-action@master"
-        with:
-          path: path/to/file.js
-          write-mode: append
-          contents: |
-            console.log('some contents')
+  #     - name: loop through the files
+  #       id: looping
+  #       run: |
+  #         arr=()
+  #         for f in ${{steps.set-matrix.outputs.matrix}}; 
+  #         do
+  #         echo 'hello'
+  #           arr+=("path1")
+  #         done
+  #         echo ::set-output name=arr::${arr[@]}
+      
+  #     - name: checking output of the job
+  #       run: echo ${{ steps.looping.outputs.arr }}
 
-      - name: Commit & Push
-        uses: Andro999b/push@v1.3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
-          force: true
-          message: 'Overwritten by Github Actions - ${date}'
 
-      - name: upload test file to artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: my-artifact1
-          path: path/to/file.js
-
-      - name: Read json file contents
-        id: read_json_file
-        uses: andstor/file-reader-action@v1
-        with:
-          path: ./artifact/test.json
-
-      - name: check file contents
-        run: echo ${{steps.read_json_file.outputs.contents}}
-
-      - name: Print the test file contents
-        shell: bash
-        run: |
-          value=`cat path/to/file.js`
-          echo The result is $value
-
-  check:
-    needs: [ read-file ]
-    runs-on: ubuntu-latest
-    strategy:
-        fail-fast: false
-        matrix:
-            manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
-            # include: 
-            #   - manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
-    steps:
-      - uses: actions/checkout@v2 
-      - run: |
-          echo "${{ matrix.manifest }}"
-
-      - name: Read artifacts
-        uses: actions/download-artifact@v2
-        with: 
-          name: my-artifact
-          path: ./artifact
-
-      - name: Print the final result
-        shell: bash
-        run: |
-          value=`cat ./artifact/test.json`
-          echo The result is $value
-
-      - name: Read test file
-        uses: actions/download-artifact@v2
-        with: 
-          name: my-artifact1
-          path: path/to/file.js
-
-      - name: Print the final result
-        shell: bash
-        run: |
-          value=`cat path/to/file.js`
-          echo The result is $value
-  
-  # check_test:
-  #   needs: [ read-file ]
+  # read-file:
+  #   needs: list-products
   #   runs-on: ubuntu-latest
   #   strategy:
   #       matrix:
-  #           value: [hsjad,dds]
+  #           manifest: ${{ fromJson(needs.list-products.outputs.matrix) }}
+  #   outputs:
+  #     matrix-json: ${{ steps.read_file.outputs.contents }}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+
+  #     - name: Read file contents
+  #       id: read_file
+  #       uses: andstor/file-reader-action@v1
+  #       with:
+  #         path: ${{ matrix.manifest }}
+      
+  #     - name: Save file contents
+  #       run: echo "::set-output name=contents::${{steps.read_file.outputs.contents}}"
+
+  #     - name: checking output of the job
+  #       run: echo ${{ toJSON(steps.read_file.outputs.contents) }}
+
+  #     - uses: actions/checkout@v2
+  #     - run: mkdir -p ./artifact
+
+  #     - run: echo ${{ toJSON(steps.read_file.outputs.contents) }} > ./artifact/test.json
+
+  #     - name: upload to artifacts
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: my-artifact
+  #         path: ./artifact/test.json
+
+  #     - name: create new test file
+  #       uses: "DamianReeves/write-file-action@master"
+  #       with:
+  #         path: ./artifact/file.json
+  #         write-mode: append
+  #         contents: |
+  #           toJSON(steps.read_file.outputs.contents)
+
+  #     # extract branch name on pull request
+  #     - name: Print branch name
+  #       if: github.event_name == 'pull_request'
+  #       env:
+  #         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+  #       run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_HEAD_REF})"
+
+  #     # print branch name
+  #     - name: Get branch name
+  #       run: echo 'The branch name is' $BRANCH_NAME
+
+
+  #     - name: Commit & Push
+  #       uses: Andro999b/push@v1.3
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #         branch: refs/heads/$BRANCH_NAME
+  #         force: true
+  #         message: 'Overwritten by Github Actions - ${date}'
+
+  #     - name: upload test file to artifacts
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: my-artifact1
+  #         path: ./artifact/file.json
+
+  #     - name: Read json file contents
+  #       id: read_json_file
+  #       uses: andstor/file-reader-action@v1
+  #       with:
+  #         path: ./artifact/test.json
+
+  #     - name: check file contents
+  #       run: echo ${{steps.read_json_file.outputs.contents}}
+
+  #     - name: Print the test file contents
+  #       shell: bash
+  #       run: |
+  #         value=`cat ./artifact/file.json`
+  #         echo The result is $value
+
+  # check:
+  #   needs: [ read-file ]
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #       fail-fast: false
+  #       matrix:
+  #           manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
+  #           # include: 
+  #           #   - manifest: ${{ fromJson(needs.read-file.outputs.matrix-json) }}
   #   steps:
   #     - uses: actions/checkout@v2 
   #     - run: |
@@ -143,4 +183,44 @@ jobs:
   #       with: 
   #         name: my-artifact
   #         path: ./artifact
-  #       run: echo ""
+
+  #     - name: Print the final result
+  #       shell: bash
+  #       run: |
+  #         value=`cat ./artifact/test.json`
+  #         echo The result is $value
+
+  #     - name: Read test file
+  #       uses: actions/download-artifact@v2
+  #       with: 
+  #         name: my-artifact1
+  #         path: ./artifact
+
+  #     - name: Print the final result
+  #       shell: bash
+  #       run: |
+  #         value=`cat ./artifact/file.json`
+  #         echo The result is $value
+  
+  hello_world_job:
+    runs-on: ubuntu-latest
+    name: A job to say hello
+    steps:
+      # To use this repository's private action,
+      # you must check out the repository
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node Version
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14 # Install the node version needed
+
+      - name: Hello world action step
+        uses: actions/checkout@v2
+        id: hello
+        with:
+          who-to-greet: 'Mona the Octocat'
+      # Use the output from the `hello` step
+      - name: Get the output time
+        run: echo "The time was ${{ steps.hello.outputs.time }}"
