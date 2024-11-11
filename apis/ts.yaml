@@ -1,0 +1,1169 @@
+openapi: 3.0.0
+paths:
+  /health:
+    get:
+      operationId: AppController_getHealth
+      summary: Health check
+      description: |-
+        Application health check is a monitoring process that determines whether
+            the application is running or not. This API should be called to monitor the application status.
+      parameters: []
+      responses:
+        '200':
+          description: Application is up and running
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error on health check
+      tags: &ref_0
+        - Common APIs
+  /request/{requestId}:
+    get:
+      operationId: AppController_getRequest
+      summary: Get request details by request id
+      description: >-
+        Get Request details by id which returns request status, any errors and
+        all related information.Since Token Service supports queuing and
+        asynchronous processing, some APIs will provide the users with a request
+        id as a response. To check the status and other details of the request,
+        this API should be called with the request id to get those details.
+
+          A request can have the following statuses (in the requestStatus field) which signify different states of a request :
+
+           * PENDING: The request has been registered with the system and will be picked up for processing.
+           * IN_PROGRESS: The request has been picked up by the system for processing.
+           * QUEUED: The request has been queued with the blockchain interaction service for blockchain transaction.
+           * SUCCESS: The request has successfully completed.
+           * FAILURE: The request has encountered some error and has failed. Check the errorCode, errorType, errorMessage and errorDetails fields on the response for more details.
+      parameters:
+        - name: requestId
+          required: true
+          in: path
+          example: 123e4567-e89b-12d3-a456-426614174000
+          description: Please provide the request id
+          schema: {}
+      responses:
+        '200':
+          description: Request Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResponseDto'
+        '400':
+          description: Bad Request
+        '404':
+          description: Request details not found
+        '500':
+          description: Internal Server Error
+      tags: *ref_0
+      security:
+        - oauth2:
+            - read:request_details
+  /byoc:
+    post:
+      operationId: ByocController_createContract
+      summary: Register an already deployed Smart Contract on EY Opschain Token Service
+      description: >
+        Contract Registration is the process by which users can bring their own
+        deployed contracts into Token Service.
+
+        The API expects the compiled contract (contract ABI) as an input. Token
+        Service then uses its one of a kind, custom built **ABI to API
+        transpiler** to 
+
+        process the compiled contract and converts it into an equivalent **Open
+        API 3.0 Specification** and provides it back
+
+        to the user. This specification provides an easy interface for users to
+        refer, to execute contract operations.
+
+        Along with that, the contract is registered with the system and is
+        available for interaction
+
+        using Token Service contract interaction APIs. We store the compiled
+        contract ABI as well as the output API in our database
+
+        so that it is readily available to the user at any time.
+
+        **The combination of contract address and blockchain network combination
+        should always be unique, i.e once a contract address is used for a
+        blockchain network, it cannot be used again.**
+
+        The field contractStandard will define the contract type that is being
+        registered with the system.
+
+        The field abiJson defines the json string of the compiled contract you
+        are bringing. This can be obtained from the .abi files generated after a
+        contract has been compiled.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContractDto'
+      responses:
+        '201':
+          description: Contract Registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateContractResponseDto'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags:
+        - Bring Your Own Smart Contract (BYOSC)
+      security:
+        - oauth2:
+            - create:bring_your_contract
+  /deploy/template/{contractStandard}:
+    get:
+      operationId: DeployController_getContractParams
+      summary: Get contract deployment parameters by contract standard.
+      description: >-
+        Token Service supports standard contract templates that can be used for
+        contract deployments. 
+            *contractStandard* is given as parameter in the URL. The list of all supported contract standards can be obtained from the */deploy/templates* endpoint. 
+            To deploy any contract, a list of parameters must be provided.
+            This API returns the list of parameters with their data types for the contract type provided as input. 
+            The response can be then used to provide deployment parameters which is accepted as a list in the contract deployment API.
+      parameters:
+        - name: contractStandard
+          required: true
+          in: path
+          description: Supported contract standards
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of parameters for contract standard supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateDeploymentParamsDto'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags: &ref_1
+        - Deploy a new Smart Contract
+      security:
+        - oauth2:
+            - read:deploy_templates
+  /deploy/templates:
+    get:
+      operationId: DeployController_getAllContractParams
+      summary: >-
+        Get list of all available token contract templates supported by the
+        system for deployment.
+      description: |-
+        Token Service supports standard contract templates that can be used for
+            contract deployments. To deploy any contract, a list of parameters must be provided.
+            This API returns the list of all token standards with their deployment parameters. The parameter type and names are mentioned with the response. The response can be then used to provide deployment parameters which is accepted as a list in the contract deployment API.
+      parameters: []
+      responses:
+        '200':
+          description: List of all deployment templates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentTemplatesDto'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags: *ref_1
+      security:
+        - oauth2:
+            - read:deploy_templates
+  /deploy:
+    post:
+      operationId: DeployController_deployContract
+      summary: Deploy a contract
+      description: |-
+        Token Service supports asynchronous queued deployments of contracts
+            onto the blockchain. A list of all supported contract standards can be obtained from the */deploy/templates* endpoint. These can be deployed by just passing the contract standard and the parameters required for deployment.
+            This API takes as input one of the supported contracts and its deployment parameters and deploys the contract to the blockchain asynchronously.
+            This API returns the *requestId* of the deployment operation as the response. The *requestId* can be then used as the URL parameter in the *request* details API to get the status of the operation. 
+            These APIs support idempotency and hence can receive a *requestId* and this will be used to track the request throughout the request lifecycle. Users will receive the same *requestId* as response. There is an optional parameter called *estimateOnly* which only accept a boolean value (true/false) and can be used to receive the gas estimation for the transaction.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeployContractDto'
+      responses:
+        '201':
+          description: Request sent to the blockchain
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestIdResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags: *ref_1
+      security:
+        - oauth2:
+            - create:deploy_template_contract
+            - create:deploy_upgradable_contract
+  /deploy/custom-contract:
+    post:
+      operationId: DeployController_deployOwnContract
+      summary: Deploy your own contract from a solidity file
+      description: >-
+        Token Service supports asynchronous queued deployment of contracts that
+        you can bring as a solidity file. These can be deployed by 
+            uploading your solidity file and passing along the parameters needed for deployment, the contract name that is to be deployed, an optional optimize flag that actually uses
+            solc optimizer to optimize the contract abi, an optional optimization level by which you can specify what level of optimization you would like and a some comments regarding
+            your custom contract which can act as a small summary for your contract. Please note some constraints that you will need to keep in mind when using this API. Firstly, the system supports solidity files 
+            with version greater than 0.8.0. Secondly, all solidity code must be bundled into a single file and sent along with the request. So if you have imports that refer to a different file, you would need to include
+            the other file's code into the single file that you are uploading.
+            This API returns the *requestId* of the deployment operation as the response. The *requestId* can be then used as the URL parameter in the *request* details API to get the status of the operation. These APIs support idempotency and hence can receive a *requestId* and this will be used to track the request throughout the request lifecycle. Users will receive the same *requestId* as response. There is an optional parameter called *estimateOnly* which only accept a boolean value (true/false) and can be used to receive the gas estimation for the transaction.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeployOwnContractDto'
+      responses:
+        '201':
+          description: Request sent to the blockchain
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestIdResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags: *ref_1
+      security:
+        - oauth2:
+            - create:deploy_custom_contract
+  /deploy/proxy:
+    post:
+      operationId: DeployController_deployProxyContract
+      summary: Deploy a proxy contract
+      description: >-
+        Token Service supports asynchronous queued deployments of upgradeable
+        contracts
+            onto the blockchain, which are accessed via Proxy contracts. Standard upgradeable contracts for *ERC721_NFT*, *ERC1155_NFT* are supported by the system. Once the upgradeable contract is deplpoyed, Proxy needs to be deployed by just passing the parameters required for deployment.
+            This API takes as input one of the supported contracts and its deployment parameters and deploys the contract to the blockchain asynchronously.
+            This API returns the *requestId* of the deployment operation as the response. The *requestId* can be then used as the URL parameter in the *request* details API to get the status of the operation. 
+            These APIs support idempotency and hence can receive a *requestId* and this will be used to track the request throughout the request lifecycle. Users will receive the same *requestId* as response. There is an optional parameter called *estimateOnly* which only accept a boolean value (true/false) and can be used to receive the gas estimation for the transaction.
+            Note: The contract standard field should be passed in as *UUPS_PROXY*.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeployProxyContractDto'
+      responses:
+        '201':
+          description: Request sent to the blockchain
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestIdResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags: *ref_1
+      security:
+        - oauth2:
+            - create:deploy_upgradable_contract
+  /getContracts:
+    get:
+      operationId: ContractController_getAllContracts
+      summary: Get all contracts with pagination support
+      description: >-
+        Returns the list of contracts registered in the system for an
+
+        organization. There is support for pagination which can be set as per
+        your choice. 
+
+        A page size and page number can be passed in as query parameters to
+        regulate the same. 
+
+        **The organization is determined on the basis of the client-id,
+        client-secret and network-id headers.**
+
+        The field page will define the page number, the field size will define
+        the page size to be sent with the request.
+      parameters:
+        - name: size
+          required: true
+          in: query
+          example: '100'
+          description: Please provide the page size for pagination
+          schema: {}
+        - name: page
+          required: true
+          in: query
+          example: '1'
+          description: Please provide the page number for pagination
+          schema: {}
+      responses:
+        '200':
+          description: List of contracts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractPaginationResponseDto'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags: &ref_2
+        - Retrieve your Smart Contracts
+      security:
+        - oauth2:
+            - read:view_contracts
+  /getContract/{address}:
+    get:
+      operationId: ContractController_getContractByAddress
+      summary: Get a contract by contract address for a network
+      description: >-
+        Get contract by contract address for an organization and blockchain
+        network.
+            The client-id, client-secret and network-id headers are used to get the organization details in the background. 
+            **A contract address and blockchain network combination should always be unique, i.e once a contract address is used
+            for a blockchain address, it cannot be used again.**
+      parameters:
+        - name: address
+          required: true
+          in: path
+          example: '0x1662f118bFA9c8B752154184Ab98bE7071ffffff'
+          description: >-
+            Please provide a Contract Address with format
+            0x0000000000000000000000000000000000000000
+          schema: {}
+      responses:
+        '200':
+          description: Contract Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        '400':
+          description: Bad Request
+        '404':
+          description: Contract not found
+        '500':
+          description: Internal Server Error
+      tags: *ref_2
+      security:
+        - oauth2:
+            - read:view_contracts
+  /contract/{address}/method/{method}:
+    get:
+      operationId: ContractInteractionController_executeReadInteractions
+      summary: Execute read based contract transactions on the blockchain in real time.
+      description: |-
+        Token Service supports interactions that read data in
+            blockchain. Reading data from blockchain is called a **call** and it can be used to execute code on the network, though no data will be permanently changed. Read operations give information present in the blockchain like the *name* of the token, the *symbol* of the token, the token *balance* etc. The contract *address* as well as the *method* (name of the operation to be executed) is given as parameters in the URL. Calls are free to run. When you execute a contract function via a call you will receive the return value immediately. This API returns the status of the interaction and the value returned from the blockchain as result. The value in response varies based on the *method* passed as the parameter. There is an optional parameter called *estimateOnly* which only accept boolean values and if it pass it as *true* it will return the gas count.
+      parameters:
+        - name: estimateOnly
+          required: false
+          in: query
+          description: Optional parameter to get gas estimation
+          example: true
+          schema: {}
+        - name: params
+          required: false
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          description: Optional parameters for method to be executed
+        - name: method
+          required: true
+          in: path
+          description: Contract read method to execute
+          example: name
+          schema: {}
+        - name: address
+          required: true
+          in: path
+          description: >-
+            Please provide a Contract Address with format
+            0x0000000000000000000000000000000000000000
+          example: '0x1662f118bFA9c8B752154184Ab98bE7071ffffff'
+          schema: {}
+      responses:
+        '200':
+          description: Data returned back from the blockchain
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ContractInteractionReadResponseDto'
+                  - $ref: '#/components/schemas/GasEstimateDto'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags: &ref_3
+        - Smart Contract Interactions
+      security:
+        - oauth2:
+            - read:contract_interactions
+    post:
+      operationId: ContractInteractionController_executeWriteInteractions
+      summary: >-
+        Execute write based contract transactions on the blockchain
+        asynchronously
+      description: |-
+        Token Service supports interactions writes (or changes) data in
+            blockchain. Writing data onto blockchain is called a **transaction** and it can be simple or a complicated operation. Write operations interact with contracts in blockchain like *mint*, *burn*, *transfer* etc.
+            The contract *address* as well as the *method* (name
+            of the operation to be executed) is given as parameters in the URL. Transactions cost Ether to run, known as "gas", and transactions take time to process. When you execute a contract's function via a transaction, you cannot receive that function's return value because the transaction isn't processed immediately. 
+            This API returns the *requestId* of the write operation as the response. The *requestId* can be then used as the URL parameter in the *request* details API to get more information on the operation.These APIs support idempotency and hence can receive a *requestId* and this will be used to track the request throughout the request lifecycle. Users will receive the same *requestId* as response. There is an optional parameter called *estimateOnly* which only accept boolean values and if it pass it as *true* it will return the gas count.
+      parameters:
+        - name: method
+          required: true
+          in: path
+          description: Contract write method to execute
+          example: mint
+          schema: {}
+        - name: address
+          required: true
+          in: path
+          description: >-
+            Please provide a Contract Address with format
+            0x0000000000000000000000000000000000000000
+          example: '0x1662f118bFA9c8B752154184Ab98bE7071ffffff'
+          schema: {}
+      requestBody:
+        required: true
+        description: Parameters required for the method being called
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteWriteInteractionDto'
+      responses:
+        '200':
+          description: Data returned back from the blockchain
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ContractInteractionWriteResponseDto'
+                  - $ref: '#/components/schemas/GasEstimateDto'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags: *ref_3
+      security:
+        - oauth2:
+            - write:contract_interactions
+  /upgrade:
+    post:
+      operationId: UpgradeContractController_upgradeContract
+      summary: Updates the proxy to point towards a new contract implementation
+      description: >-
+        Token Service supports upgradeability of smart contracts through the
+        UUPS proxy pattern.
+      parameters: []
+      requestBody:
+        required: true
+        description: Parameters required for performing upgrade
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpgradeContractDto'
+      responses:
+        '201':
+          description: Implementation Upgraded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestIdResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags:
+        - Upgrade to new Implementation
+      security:
+        - oauth2:
+            - create:deploy_upgradable_contract
+  /verify-contract/{address}:
+    post:
+      operationId: VerifyContractController_verifyContract
+      summary: Verifies a deployed contract
+      description: >-
+        Token Service supports contract verification of deployed contracts on
+        specific blockchain explorers.
+      parameters:
+        - name: address
+          required: true
+          in: path
+          description: >-
+            Please provide a Contract Address with format
+            0x0000000000000000000000000000000000000000
+          example: '0x1662f118bFA9c8B752154184Ab98bE7071ffffff'
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Contract Verification request sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestIdResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags:
+        - Verify deployed Contract
+      security:
+        - oauth2:
+            - create:deploy_template_contract
+            - create:deploy_upgradable_contract
+  /wallets/balance:
+    get:
+      operationId: WalletController_getWalletBalance
+      summary: Get wallet balance
+      description: >-
+        Get wallet balance for the wallet address and the network which are
+        being encoded and passed as a part of authorization token
+      parameters: []
+      responses:
+        '200':
+          description: Wallet balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletBalanceDto'
+        '400':
+          description: Bad Request
+        '404':
+          description: Request details not found
+        '500':
+          description: Internal Server Error
+      tags:
+        - Get wallet info
+      security:
+        - oauth2:
+            - read:wallet_balance
+  /contract/multiRequest:
+    post:
+      operationId: MultiRequestController_executeMultiRequestInteractions
+      summary: >-
+        Execute multiple write based contract transactions on the blockchain in
+        a single API
+      description: >-
+        The Token Service supports multiple interactions that write (or change)
+        data on the blockchain in a single API call. Using this API, users can
+        place multiple transaction requests in a single call, such as minting a
+        token and transferring it to another wallet. This API returns an array
+        of request IDs for the write operations as the response. The request IDs
+        can then be used as URL parameters in the Request Details API to obtain
+        more information about the operations.
+      parameters: []
+      requestBody:
+        required: true
+        description: Parameters required for the method being called
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteMultiRequestWriteInteractionDto'
+      responses:
+        '200':
+          description: Data returned back from the blockchain
+          content:
+            application/json:
+              schema:
+                $ref: >-
+                  #/components/schemas/MultiRequestContractInteractionWriteResponseDto
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags:
+        - Multi Request Smart Contracts Interaction
+      security:
+        - oauth2:
+            - write:contract_interactions
+info:
+  title: Token Service
+  description: >-
+    EY OpsChain Token Service is a Global Blockchain Team software that allows
+    to deploy and interact with Smart Contracts on Ethereum and Polygon
+    (including testnets) through the use of REST APIs. 
+
+      The purpose of Token Service APIs is to enable builders to:
+      * Understand the EY templated contracts available for use
+      * Allows to “bring your own contract” (already deployed) and receive REST APIs to interact with it
+      * Allows to "deploy your own contract" and receive REST APIs to interact with it
+      * Provides reliable and consistent throughput through EY enterprise-grade Transaction Manager that manages interactions with Blockchain
+  version: 1.0.0
+  contact: {}
+tags:
+  - name: Common APIs
+    description: ''
+  - name: Bring Your Own Smart Contract (BYOSC)
+    description: ''
+  - name: Deploy a new Smart Contract
+    description: ''
+  - name: Retrieve your Smart Contracts
+    description: ''
+  - name: Smart Contract Interactions
+    description: ''
+  - name: Upgrade to new Implementation
+    description: ''
+servers:
+  - url: https://api.blockchain.ey.com/token-service
+    description: Production server
+  - url: http://localhost:8112
+    description: Local development server
+  - url: http://api.token-service.dev2.blockchain.ey.com
+    description: Development server
+  - url: https://api.stage.blockchain.ey.com/token-service
+    description: Staging server
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: ''
+          tokenUrl: ''
+          scopes:
+            create:deploy_custom_contract: Deploy a custom contract from a solidity file.
+            create:bring_your_contract: >-
+              Register an already deployed Smart Contract on EY Opschain Token
+              Service
+            create:deploy_template_contract: Deploy a smart contract using Token Service contract templates
+            create:deploy_upgradable_contract: >-
+              Deploy upgradable contract using ERC721 and ERC1155 contract
+              templates
+            read:deploy_templates: Get deployment template details
+            read:view_contracts: >-
+              Get all the contract with pagination support and retrieve a
+              contract by address
+            read:wallet_balance: Get wallet balance
+            read:request_details: Get request status and details
+            read:contract_interactions: >-
+              Execute read based contract transactions on the blockchain in real
+              time
+            write:contract_interactions: >-
+              Execute write based contract transactions on the blockchain
+              asynchronously
+  schemas:
+    RequestResponseDto:
+      type: object
+      properties:
+        requestId:
+          type: string
+          example: f8848059-02ff-4ffc-9d18-a947b7998dfe
+          description: Request id
+        requestType:
+          type: string
+          enum:
+            - GET
+            - POST
+            - PATCH
+            - DELETE
+            - PUT
+          example: POST
+          description: HTTP request type
+        requestStatus:
+          type: string
+          enum:
+            - SUCCESS
+            - FAILURE
+            - IN_PROGRESS
+            - PENDING
+            - QUEUED
+          example: SUCCESS
+          description: Request Status
+        operationType:
+          type: string
+          example: mint
+          description: Operation on blockchain
+        createdDate:
+          type: string
+          example: '2022-11-01T13:33:10.975Z'
+          description: Request Created Date
+        updatedDate:
+          type: string
+          example: '2022-11-01T13:33:28.752Z'
+          description: Request Updated Date
+        transactionHash:
+          type: string
+          example: 0x9b84fefee9e0184a71eae489328b9e972f42c5f3c2e90369eab8e643cqwerty
+          description: Transaction Hash value if SUCCESS else null
+        blockTime:
+          type: string
+          example: '2022-11-01T13:33:28.752Z'
+          description: Timestamp when the block containing the transaction was mined
+        networkId:
+          type: string
+          example: '80001'
+          description: Network id
+        comments:
+          type: string
+          example: null
+          description: Error Information if FAILURE else null
+        errorCode:
+          type: string
+          example: CALL_EXCEPTION
+          description: Short string indicating error code on FAILURE else null
+        errorType:
+          type: string
+          example: blockchain_error
+          description: Type of error returned on FAILURE else null
+        errorMessage:
+          type: string
+          example: 'execution reverted: Token already minted.'
+          description: >-
+            Human readable message providing more details about the error on
+            FAILURE else null
+      required:
+        - requestId
+        - requestType
+        - requestStatus
+        - operationType
+        - createdDate
+        - updatedDate
+        - transactionHash
+        - blockTime
+        - networkId
+        - comments
+        - errorCode
+        - errorType
+        - errorMessage
+    CreateContractResponseDto:
+      type: object
+      properties:
+        contractAddress:
+          type: string
+          example: '0x1662f118bFA9c8B752154184Ab98bE7071ffffff'
+          description: Contract Address
+        networkId:
+          type: string
+          example: '80001'
+          description: Network id
+        apiJson:
+          type: string
+          example: {}
+          description: Swagger OpenAPI Json
+        contractStandard:
+          type: string
+          example: ERC1155
+          description: Contract Standard
+        userContract:
+          type: boolean
+          example: true
+          description: Flag whether user contract or not
+        organizationId:
+          type: string
+          example: 62f34f15e8a583462qwerty
+          description: Organization id
+        hash:
+          type: string
+          example: md5-d8ae7cee0e1e5450ff1dd375c0546097
+          description: Hash value
+      required:
+        - contractAddress
+        - networkId
+        - apiJson
+        - contractStandard
+        - userContract
+        - organizationId
+        - hash
+    CreateContractDto:
+      type: object
+      properties:
+        contractAddress:
+          type: string
+          description: >-
+            Please provide a Contract Address with format
+            0x0000000000000000000000000000000000000000
+        contractStandard:
+          type: string
+          description: Please provide the contract standard
+        abiJson:
+          type: string
+          description: >-
+            Please provide the compiled contract (contract ABI) with format
+            {"_format":"hh-sol-artifact-1",...}
+      required:
+        - contractAddress
+        - contractStandard
+        - abiJson
+    DeploymentParamDto:
+      type: object
+      properties:
+        type:
+          type: string
+        name:
+          type: string
+      required:
+        - type
+        - name
+    TemplateDeploymentParamsDto:
+      type: object
+      properties:
+        contractStandard:
+          type: string
+        deploymentParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeploymentParamDto'
+      required:
+        - contractStandard
+        - deploymentParams
+    DeploymentTemplatesDto:
+      type: object
+      properties:
+        deploymentTemplates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateDeploymentParamsDto'
+      required:
+        - deploymentTemplates
+    DeployContractDto:
+      type: object
+      properties:
+        contractStandard:
+          type: string
+        params:
+          description: Optional parameters for deployment
+          type: array
+          items:
+            type: string
+        gasPrice:
+          type: object
+          description: >-
+            Gas price to pay for the transaction. To be provided in Wei (for
+            example, 1250000020). Overrides the automatic calculation done by
+            OpsChain.
+        requestId:
+          type: string
+          description: >-
+            Tracking id or request id. This ID needs to be unique to provide
+            idempotency and will remain same for the request
+        estimateOnly:
+          type: boolean
+          description: >-
+            If the estimateOnly flag is enabled, the system will provide a gas
+            estimation for the transaction, it will not execute the transaction
+            in this case
+      required:
+        - contractStandard
+    RequestIdResponse:
+      type: object
+      properties:
+        requestId:
+          type: string
+      required:
+        - requestId
+    DeployOwnContractDto:
+      type: object
+      properties:
+        contractToDeploy:
+          type: string
+          description: Contract name that is to be deployed
+        params:
+          type: string
+          description: >-
+            Contract deployment parameters (comma separated string for multiple
+            parameters)
+        comments:
+          type: string
+          description: Comments or summary about the custom contract
+          default: false
+        optimize:
+          type: boolean
+          description: Boolean flag to optimize ABI for the contract
+          default: false
+        optimizationLevel:
+          type: number
+          description: Optimization level for ABI optimization
+          default: 200
+        file:
+          type: string
+          format: binary
+          description: Solidity file (.sol)
+        gasPrice:
+          type: object
+          description: >-
+            Gas price to pay for the transaction. To be provided in Wei (for
+            example, 1250000020). Overrides the automatic calculation done by
+            OpsChain.
+        requestId:
+          type: string
+          description: >-
+            Tracking id or request id. This id is idempotent and will remain
+            same for the request
+        estimateOnly:
+          type: boolean
+          description: >-
+            Optional parameter which accept a boolean value (true/false) and can
+            be used to receive the gas estimation for the transaction.
+      required:
+        - contractToDeploy
+        - comments
+        - file
+    DeployProxyContractDto:
+      type: object
+      properties:
+        contractStandard:
+          type: string
+        implementationRequestId:
+          type: string
+          description: >-
+            Request id of the deployed Upgradeable contract to which the proxy
+            will be mapped
+        params:
+          description: Optional parameters for deployment
+          type: array
+          items:
+            type: string
+        gasPrice:
+          type: object
+          description: >-
+            Gas price that will be used to pay for the transaction. To be
+            provided in Wei (for example, 1250000020). Overrides the automatic
+            calculation done by OpsChain.
+        requestId:
+          type: string
+          description: >-
+            Identifier used to track the request on the integrating system.
+            Needs to be unique in order to provide request idempotency.
+        estimateOnly:
+          type: boolean
+      required:
+        - contractStandard
+        - implementationRequestId
+    Contract:
+      type: object
+      properties:
+        id:
+          type: string
+        contractAddress:
+          type: string
+        isDeployed:
+          type: boolean
+        abiJson:
+          type: object
+        networkId:
+          type: string
+        apiJson:
+          type: object
+        contractStandard:
+          type: string
+        userContract:
+          type: boolean
+        organizationId:
+          type: string
+        createdDate:
+          format: date-time
+          type: string
+        updatedDate:
+          format: date-time
+          type: string
+        apiHash:
+          type: string
+      required:
+        - id
+        - contractAddress
+        - isDeployed
+        - abiJson
+        - networkId
+        - apiJson
+        - contractStandard
+        - userContract
+        - organizationId
+        - createdDate
+        - updatedDate
+        - apiHash
+    ContractPaginationResponseDto:
+      type: object
+      properties:
+        totalCount:
+          type: number
+        pageCount:
+          type: number
+        pageNumber:
+          type: number
+        contracts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contract'
+      required:
+        - totalCount
+        - pageCount
+        - pageNumber
+        - contracts
+    ContractInteractionReadResponseDto:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+          description: Status of read operation
+        result:
+          type: string
+          example: MyToken
+          description: Response from blockchain based on method given in parameter
+      required:
+        - status
+        - result
+    GasEstimateDto:
+      type: object
+      properties:
+        gasEstimate:
+          type: number
+        contractAddress:
+          type: string
+        methodUsed:
+          type: string
+      required:
+        - gasEstimate
+        - contractAddress
+        - methodUsed
+    ContractInteractionWriteResponseDto:
+      type: object
+      properties:
+        requestId:
+          type: string
+          example: 19b34b9f-09c2-4fd1-ad62-a4d589fd6681
+          description: Request id of write interaction
+      required:
+        - requestId
+    ExecuteWriteInteractionDto:
+      type: object
+      properties:
+        params:
+          description: Optional parameters for method to be executed
+          type: array
+          items:
+            type: string
+        estimateOnly:
+          type: boolean
+          description: Optional parameter to get gas estimation
+        gasPrice:
+          type: object
+          description: >-
+            Gas price to pay for the transaction. To be provided in Wei (for
+            example, 1250000020). Overrides the automatic calculation done by
+            OpsChain.
+        requestId:
+          type: string
+          description: >-
+            Tracking id or request id. This ID needs to be unique to provide
+            idempotency and will remain same for the request
+    UpgradeContractDto:
+      type: object
+      properties:
+        contractStandard:
+          type: string
+          description: UUPS_PROXY contract standard
+        params:
+          type: string
+          description: Proxy address which will be updated to point to new implementation
+        implementationRequestId:
+          type: string
+          description: >-
+            Request ID of the operation completed to deploy the upgradable
+            contract to which the proxy will be pointing.
+        gasPrice:
+          type: object
+          description: >-
+            Gas price that will be used to pay for the transaction. To be
+            provided in Wei (for example, 1250000020). Overrides the automatic
+            calculation done by OpsChain.
+        requestId:
+          type: string
+          description: >-
+            Identifier used to track the request on the integrating system.
+            Needs to be unique in order to provide request idempotency.
+        estimateOnly:
+          type: boolean
+      required:
+        - contractStandard
+        - params
+        - implementationRequestId
+    WalletBalanceDto:
+      type: object
+      properties:
+        balance:
+          type: number
+      required:
+        - balance
+    ExecuteMultiRequestWriteInteractionDto:
+      type: object
+      properties:
+        data:
+          example:
+            data:
+              - contractAddress: '0xEa4b1f7Ab5b9C6750257a5f6bF6E41d43DD912Ad'
+                method: mint
+                params:
+                  - '0x934D2D1C05D051162455dAdD27a1Fd8311A49BB2'
+                  - '22'
+                  - '200'
+                  - NA
+              - contractAddress: '0xEa4b1f7Ab5b9C6750257a5f6bF6E41d43DD912Ad'
+                method: transfer
+                params:
+                  - '0x934D2D1C05D051162455dAdD27a1Fd8311A49BB2'
+                  - '0xBA923964778676616A5Afac8E80E5ebDCa43EcCA'
+                  - '22'
+                  - '50'
+              - contractAddress: '0xEa4b1f7Ab5b9C6750257a5f6bF6E41d43DD912Ad'
+                method: transfer
+                params:
+                  - '0x934D2D1C05D051162455dAdD27a1Fd8311A49BB2'
+                  - '0x09e8B051Eaa36249b2d0f3b432dCD610987Db654'
+                  - '22'
+                  - '50'
+              - contractAddress: '0xEa4b1f7Ab5b9C6750257a5f6bF6E41d43DD912Ad'
+                method: burn
+                params:
+                  - '0x934D2D1C05D051162455dAdD27a1Fd8311A49BB2'
+                  - '22'
+                  - '10'
+          description: Optional parameters for method to be executed
+          type: array
+          items:
+            type: string
+      required:
+        - data
+    MultiRequestContractInteractionWriteResponseDto:
+      type: object
+      properties:
+        requestIds:
+          example:
+            - a008c87a-3d90-45a1-868d-60613737b3e5
+            - 06f79a6b-abaf-454a-a58d-c28d7dae9c36
+            - 91c54701-e9a9-46a6-a4aa-1f315fb9981f
+            - f85750bf-f4be-4a78-8621-aab685ee900a
+          description: Request ids of write interaction
+          type: array
+          items:
+            type: string
+      required:
+        - requestIds

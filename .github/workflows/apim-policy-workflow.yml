@@ -1,0 +1,38 @@
+name: Apply APIM Policy
+on:
+  workflow_dispatch: # This allows for manual triggering of the workflow
+    inputs:
+        product:
+          description: 'which product to apply policy to'
+          required: true
+          type: string
+          default: ''
+jobs:
+  apply-policies:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2 # This action checks out your repository under $GITHUB_WORKSPACE
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 20.17.0 # Specify the Node.js version you need
+
+    - name: Install Dependencies
+      run: |
+          npm i
+
+    - name: Install missing packages
+      run: |
+          npm i axios xmlbuilder fs js-yaml
+
+    - name: Apply APIM Policies
+      env:
+        AZURE_CLIENT_ID: "6ff46f4c-5f28-4a8d-9635-ff153e87a727"
+        AZURE_TENANT_ID: "5b973f99-77df-4beb-b27d-aa0c70b8482c"
+        AZURE_SECRET: "NzNhYjM3ODUtYjhjOS00MmZlLWIxMDItNjJhNDdiMmVjN2Yy"
+        AZURE_SUBSCRIPTION_ID: "96d142be-16e3-43f3-8e3d-4e0f76500a68"
+        AZURE_RESOURCE_GROUP: "UE2UBECCLDRSG01"
+        AZURE_SERVICE_NAME: "UE2UBECCLDAPIM01PVT"
+        product: ${{ inputs.product }}
+      run: node script/applyPolicy.js # Replace with the path to your JS script
