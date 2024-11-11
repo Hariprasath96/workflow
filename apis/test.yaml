@@ -1,0 +1,80 @@
+openapi: 3.0.0
+info:
+  title: Test API with JWT Authorization
+  version: 1.0.0
+
+paths:
+  /:
+    get:
+      summary: Test Check
+      operationId: testCheck
+      tags:
+        - Health Check
+      responses:
+        '200':
+          description: Successfully accessed the protected resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProtectedResource'
+        '401':
+          description: Unauthorized - Invalid or missing JWT
+        '403':
+          description: Forbidden - The JWT does not have the required scope
+
+  /health-check:
+    get:
+      summary: Health Check
+      operationId: healthCheck
+      tags:
+        - Protected Resource
+      responses:
+        '200':
+          description: Successfully accessed the protected resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProtectedResource'
+        '401':
+          description: Unauthorized - Invalid or missing JWT
+        '403':
+          description: Forbidden - The JWT does not have the required scope
+      security:
+        - oauth2: 
+            - create:contract
+
+  /health-check-protected:
+    get:
+      summary: Health Check with a protected resource
+      operationId: healthCheckProtected
+      tags:
+        - Protected Resource
+      responses:
+        '200':
+          description: Successfully accessed the protected resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProtectedResource'
+        '401':
+          description: Unauthorized - Invalid or missing JWT
+        '403':
+          description: Forbidden - The JWT does not have the required scope
+      security:
+        - oauth2: 
+            - create:contract
+            - deploy:contract
+components:
+  securitySchemes:
+    oauth2:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Authorization header using the Bearer scheme
+  schemas:
+    ProtectedResource:
+      type: object
+      properties:
+        data:
+          type: string
+          example: 'This is some protected data.'
