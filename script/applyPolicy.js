@@ -21,7 +21,7 @@ const serviceName = process.env.AZURE_SERVICE_NAME;
 const subscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
 const tenantId = process.env.AZURE_TENANT_ID;
 const clientId = process.env.AZURE_CLIENT_ID;
-const clientSecret = process.env.CLIENT_SECRET;
+const clientSecret = process.env.AZURE_CLIENT_SECRET;
 const product = process.env.product;
 
 const resource = 'https://management.azure.com/';
