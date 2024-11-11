@@ -1,0 +1,12 @@
+{
+  "apimConfigs": {
+    "ts": "token-service",
+    "esg": "opschain-esg",
+    "tsp": "token-service-with-privacy",
+    "nft": "bec-nft-service",
+    "ocm": "opschain-contract-manager",
+    "ocm-es": "opschain-contract-manager-execution-service",
+    "analyzer": "analyzer-api-services",
+    "test": "test-api"
+  }
+}

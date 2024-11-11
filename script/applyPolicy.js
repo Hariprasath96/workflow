@@ -2,18 +2,7 @@ const fs = require("fs");
 const yaml = require("js-yaml");
 const axios = require('axios');
 const xmlbuilder = require('xmlbuilder');
-
-
-const apimConfigs = {
-  ts: 'token-service',
-  esg: 'opschain-esg',
-  tsp: 'token-service-with-privacy',
-  nft: 'bec-nft-service',
-  ocm: 'opschain-contract-manager',
-  'ocm-es': 'opschain-contract-manager-execution-service',
-  analyzer: 'analyzer-api-services',
-  test: 'test-api'
-};
+const config = require('config');
 
 // configuration params
 const resourceGroup = process.env.AZURE_RESOURCE_GROUP;
@@ -23,6 +12,8 @@ const tenantId = process.env.AZURE_TENANT_ID;
 const clientId = process.env.AZURE_CLIENT_ID;
 const clientSecret = process.env.AZURE_CLIENT_SECRET;
 const product = process.env.product;
+
+const apimConfigs = config.get('apimConfigs');
 
 const resource = 'https://management.azure.com/';
 const openidUrl = 'openid-url';
